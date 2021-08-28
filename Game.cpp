@@ -76,26 +76,39 @@ void Game::playerRange()
 void Game::levelUpdate()
 {
 	expMax = 12 * playerLevel;
-	if (killCount >= spawnCount)
-	{
-		spawnCount = 0;
-	}
 	if (exp >= expMax)
 	{
 		exp = 0;
 		playerLevel++;
+	}
+	if (spawnCount == 0)
+	{
+		spawnTimer += 0.1f;
+		if (spawnTimer >= spawnTimerMax)
+		{
+			spawnTimer = 0;
+			wave++;
+		}
 	}
 	std::cout << exp << " / " << expMax << std::endl;
 }
 
 void Game::enemyUpdate()
 {
-	spawnTimer += 0.5f;
-	if (spawnTimer >= spawnTimerMax && spawnCount < 8)
+	
+	if (spawnCount < 8 && spawnTimer == 0)
 	{
-		enemies_1.push_back(new Enemy_1(rand() % 600, rand() % 600, playerLevel));
-		spawnTimer = 0.f;
+		enemies_1.push_back(new Enemy_1(rand() % 600 + 1,
+		rand() % 600 + 1,
+		playerLevel));
+
 		spawnCount++;
+		enemyLeft++;
+	}
+	
+	else if (enemyLeft == 0 && killCount != 0)
+	{
+		spawnCount = 0;
 	}
 
 	for (size_t i = 0; i < enemies_1.size(); i++)
@@ -121,6 +134,7 @@ void Game::killingUpdate()
 				exp += enemies_1[i]->getEXP();
 				enemies_1.erase(enemies_1.begin() + i);
 				killCount++;
+				enemyLeft--;
 			}
 		}
 	}
@@ -136,9 +150,13 @@ void Game::update()
 	enemyUpdate();
 	levelUpdate();
 	killingUpdate();
+	gui.expUI(exp, expMax, player.getPos().x - 700, player.getPos().y - 430);
+	gui.waveUI(wave, player.getPos().x + 475, player.getPos().y - 430);
+
 	std::cout << "Damage : " << knife.knifeDamage(playerLevel) << " // ";
 	std::cout << "Level : " << playerLevel << " // ";
-	std::cout << "Kill-count" << killCount << std::endl;
+	std::cout << "Kill-count" << killCount << " // ";
+	std::cout << killCount << "-" << spawnCount << "-" << enemyLeft << std::endl;
 }
 
 void Game::render()
@@ -158,6 +176,7 @@ void Game::render()
 		window->draw(enemyHp);
 		
 	}
+	gui.render(*window);
 
 	window->display();
 }

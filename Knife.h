@@ -4,7 +4,7 @@
 class Knife
 {
 private:
-	float baseDamage = 2;
+	float baseDamage = 200.f;
 	sf::RectangleShape KnifeBox;
 public:
 	Knife();

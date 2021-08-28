@@ -18,6 +18,7 @@ private:
 	std::vector<Enemy_1*> enemies_1;
 	Enemy_1* type_1;
 	Knife knife;
+	GUI gui;
 	float spawnTimer;
 	float spawnTimerMax;
 	float attackTimer;
@@ -26,6 +27,8 @@ private:
 	int playerLevel = 1;
 	bool attackCooldown;
 	bool enableToAttack;
+	int wave = 1;
+	int enemyLeft;
 	int killCount = 0;
 	int spawnCount = 0;
 	int exp = 0;
