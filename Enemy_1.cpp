@@ -5,7 +5,7 @@ Enemy_1::Enemy_1(float posX, float posY, float level)
 	enemy_1.setSize(sf::Vector2f(50.f, 50.f));
 	enemy_1.setPosition(posX, posY);
 	enemy_1.setFillColor(sf::Color::Green);
-	MaxHp = 100 * level;
+	MaxHp = 10 * level;
 	currentHp = MaxHp;
 	status = true;
 }

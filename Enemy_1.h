@@ -1,5 +1,6 @@
 #pragma once
-#include "Knife.h"
+#include<SFML/Graphics.hpp>
+#include<iostream>
 class Enemy_1
 {
 private:

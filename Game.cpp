@@ -6,9 +6,16 @@ void Game::setting()
 	this->video.height = 900.f;
 	this->window = new sf::RenderWindow(video, "Game_2");
 	this->window->setFramerateLimit(144.f);
+	view.setSize(1440.f, 900.f);
+
+	background.setOrigin(352.f, 160.f);
+	background.setPosition(720.f, 450.f);
+	background.setScale(4.f, 4.f);
+	backgroundTexture.loadFromFile("Texture/Background.png");
+	background.setTexture(backgroundTexture);
+
 	spawnTimerMax = 100.f;
 	attackTimerMax = 100.f;
-	enableToAttack = true;
 }
 
 void Game::pollEvent()
@@ -32,16 +39,20 @@ void Game::pollEvent()
 
 void Game::attackUpdate()
 {
+	enableToAttack = false;
 	attackTimer += 0.5f;
 	if (attackTimer >= attackTimerMax)
 	{
 		//std::cout << "Enable to Attack" << std::endl;
-		enableToAttack = true;
+		attackCooldown = true;
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
 		{
-			enableToAttack = false;
+			attackCooldown = false;
 			attackTimer = 0.f;
-			std::cout << "Unable to Attack" << std::endl;
+		}
+		if (!attackCooldown)
+		{
+			enableToAttack = true;
 		}
 	}
 }
@@ -52,13 +63,26 @@ void Game::playerRange()
 	
 }
 
+void Game::levelUpdate()
+{
+	if (killCount >= spawnCount)
+	{
+		spawnCount = 0;
+	}
+	if (exp >= 12 * playerLevel)
+	{
+		playerLevel++;
+	}
+}
+
 void Game::enemyUpdate()
 {
 	spawnTimer += 0.5f;
-	if (spawnTimer >= spawnTimerMax)
+	if (spawnTimer >= spawnTimerMax && spawnCount < 8)
 	{
-		enemies_1.push_back(new Enemy_1(rand() % 200, rand() % 600, playerLevel));
+		enemies_1.push_back(new Enemy_1(rand() % 600, rand() % 600, playerLevel));
 		spawnTimer = 0.f;
+		spawnCount++;
 	}
 	for (auto* enemy_1 : enemies_1)
 	{
@@ -72,9 +96,8 @@ void Game::killingUpdate()
 	{
 		if (enemies_1[i]->getBound().intersects(knife.getBound()) &&
 			sf::Keyboard::isKeyPressed(sf::Keyboard::Space) &&
-			knife.knifeHolding)
+			knife.knifeHolding && enableToAttack)
 		{
-			std::cout << "hit" << std::endl;
 			if (enemies_1[i]->alive())
 			{
 				enemies_1[i]->takeDamage(knife.knifeDamage(playerLevel));
@@ -82,6 +105,7 @@ void Game::killingUpdate()
 			else
 			{
 				enemies_1.erase(enemies_1.begin() + i);
+				killCount++;
 			}
 		}
 	}
@@ -95,17 +119,27 @@ void Game::update()
 	playerRange();
 	attackUpdate();
 	enemyUpdate();
+	levelUpdate();
 	killingUpdate();
+	std::cout << "Damage : " << knife.knifeDamage(playerLevel) << " // ";
+	std::cout << "Level : " << playerLevel << " // ";
+	std::cout << "Kill-count" << killCount << std::endl;
 }
 
 void Game::render()
 {
 	window->clear();
+
+	view.setCenter(player.getPos());
+	window->setView(view);
+
+	window->draw(background);
 	player.render(*window);
 	knife.render(*window);
 	for (auto* enemy_1 : enemies_1)
 	{
 		enemy_1->render(*window);
 	}
+
 	window->display();
 }

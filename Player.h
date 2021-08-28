@@ -1,5 +1,6 @@
 #pragma once
-#include "Enemy_1.h"
+#include<SFML/Graphics.hpp>
+#include<iostream>
 class Player
 {
 private:
