@@ -37,6 +37,16 @@ void Game::pollEvent()
 	}
 }
 
+void Game::enemyUIUpdate(int index)
+{
+	font.loadFromFile("Font/dogica.ttf");
+	enemyHp.setFont(font);
+	enemyHp.setFillColor(sf::Color::White);
+	enemyHp.setCharacterSize(16);
+	enemyHp.setString(std::to_string(enemies_1[index]->getHp()) + "/" + std::to_string(enemies_1[index]->getMaxHp()));
+	enemyHp.setPosition(enemies_1[index]->getPos().x, enemies_1[index]->getPos().y - 50);
+}
+
 void Game::attackUpdate()
 {
 	enableToAttack = false;
@@ -65,14 +75,17 @@ void Game::playerRange()
 
 void Game::levelUpdate()
 {
+	expMax = 12 * playerLevel;
 	if (killCount >= spawnCount)
 	{
 		spawnCount = 0;
 	}
-	if (exp >= 12 * playerLevel)
+	if (exp >= expMax)
 	{
+		exp = 0;
 		playerLevel++;
 	}
+	std::cout << exp << " / " << expMax << std::endl;
 }
 
 void Game::enemyUpdate()
@@ -84,9 +97,10 @@ void Game::enemyUpdate()
 		spawnTimer = 0.f;
 		spawnCount++;
 	}
-	for (auto* enemy_1 : enemies_1)
+
+	for (size_t i = 0; i < enemies_1.size(); i++)
 	{
-		enemy_1->update();
+		enemies_1[i]->update();
 	}
 }
 
@@ -98,12 +112,13 @@ void Game::killingUpdate()
 			sf::Keyboard::isKeyPressed(sf::Keyboard::Space) &&
 			knife.knifeHolding && enableToAttack)
 		{
-			if (enemies_1[i]->alive())
+			if (enemies_1[i]->getHp() > 0)
 			{
 				enemies_1[i]->takeDamage(knife.knifeDamage(playerLevel));
 			}
-			else
+			if(enemies_1[i]->getHp() <= 0)
 			{
+				exp += enemies_1[i]->getEXP();
 				enemies_1.erase(enemies_1.begin() + i);
 				killCount++;
 			}
@@ -136,9 +151,12 @@ void Game::render()
 	window->draw(background);
 	player.render(*window);
 	knife.render(*window);
-	for (auto* enemy_1 : enemies_1)
+	for (size_t i = 0; i < enemies_1.size(); i++)
 	{
-		enemy_1->render(*window);
+		enemyUIUpdate(i);
+		enemies_1[i]->render(*window);
+		window->draw(enemyHp);
+		
 	}
 
 	window->display();

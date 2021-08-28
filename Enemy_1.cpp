@@ -7,7 +7,7 @@ Enemy_1::Enemy_1(float posX, float posY, float level)
 	enemy_1.setFillColor(sf::Color::Green);
 	MaxHp = 10 * level;
 	currentHp = MaxHp;
-	status = true;
+	exp = 2.f;
 }
 
 void Enemy_1::takeDamage(float damage)
@@ -17,8 +17,6 @@ void Enemy_1::takeDamage(float damage)
 
 void Enemy_1::update()
 {
-	if (currentHp < 0)
-		status = false;
 }
 
 void Enemy_1::render(sf::RenderTarget& other)

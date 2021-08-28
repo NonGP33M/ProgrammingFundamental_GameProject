@@ -8,7 +8,7 @@ private:
 	sf::RectangleShape KnifeBox;
 public:
 	Knife();
-	bool knifeHolding = false;
+	bool knifeHolding = true;
 	inline const sf::FloatRect getBound() { return KnifeBox.getGlobalBounds(); }
 	inline const float knifeDamage(float level) { return baseDamage + (baseDamage * level); }
 	void setPosition(float posX, float posY);

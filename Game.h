@@ -12,6 +12,8 @@ private:
 	sf::Event event;
 	sf::Sprite background;
 	sf::Texture backgroundTexture;
+	sf::Text enemyHp;
+	sf::Font font;
 	Player player;
 	std::vector<Enemy_1*> enemies_1;
 	Enemy_1* type_1;
@@ -21,16 +23,18 @@ private:
 	float attackTimer;
 	float attackTimerMax;
 	int weaponSlot = 1;
-	float playerLevel = 1.f;
+	int playerLevel = 1;
 	bool attackCooldown;
 	bool enableToAttack;
 	int killCount = 0;
 	int spawnCount = 0;
 	int exp = 0;
+	int expMax;
 public:
 	inline const bool running() { return window->isOpen(); }
 	void setting();
 	void pollEvent();
+	void enemyUIUpdate(int index);
 	void attackUpdate();
 	void playerRange();
 	void levelUpdate();
