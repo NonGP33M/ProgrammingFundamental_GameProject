@@ -16,6 +16,10 @@ void Game::setting()
 
 	spawnTimerMax = 100.f;
 	attackTimerMax = 100.f;
+
+	font.loadFromFile("Font/dogica.ttf");
+	enemy_1Hp.setFont(font);
+	enemy_2Hp.setFont(font);
 }
 
 void Game::pollEvent()
@@ -37,14 +41,20 @@ void Game::pollEvent()
 	}
 }
 
-void Game::enemyUIUpdate(int index)
+void Game::enemy_1UIUpdate(int index)
 {
-	font.loadFromFile("Font/dogica.ttf");
-	enemyHp.setFont(font);
-	enemyHp.setFillColor(sf::Color::White);
-	enemyHp.setCharacterSize(16);
-	enemyHp.setString(std::to_string(enemies_1[index]->getHp()) + "/" + std::to_string(enemies_1[index]->getMaxHp()));
-	enemyHp.setPosition(enemies_1[index]->getPos().x, enemies_1[index]->getPos().y - 50);
+	enemy_1Hp.setFillColor(sf::Color::White);
+	enemy_1Hp.setCharacterSize(16);
+	enemy_1Hp.setString(std::to_string(enemies_1[index]->getHp()) + "/" + std::to_string(enemies_1[index]->getMaxHp()));
+	enemy_1Hp.setPosition(enemies_1[index]->getPos().x, enemies_1[index]->getPos().y - 50);
+}
+
+void Game::enemy_2UIUpdate(int index)
+{
+	enemy_2Hp.setFillColor(sf::Color::White);
+	enemy_2Hp.setCharacterSize(16);
+	enemy_2Hp.setString(std::to_string(enemies_2[index]->getHp()) + "/" + std::to_string(enemies_2[index]->getMaxHp()));
+	enemy_2Hp.setPosition(enemies_2[index]->getPos().x, enemies_2[index]->getPos().y - 50);
 }
 
 void Game::attackUpdate()
@@ -98,12 +108,25 @@ void Game::enemyUpdate()
 	
 	if (spawnCount < 8 && spawnTimer == 0)
 	{
-		enemies_1.push_back(new Enemy_1(rand() % 600 + 1,
-		rand() % 600 + 1,
-		playerLevel));
+		type = rand() % 2 + 1;
+		if (type == 1)
+		{
+			enemies_1.push_back(new Enemy_1(rand() % 600 + 1,
+				rand() % 600 + 1,
+				playerLevel));
 
-		spawnCount++;
-		enemyLeft++;
+			spawnCount++;
+			enemyLeft++;
+		}
+		else if (type == 2)
+		{
+			enemies_2.push_back(new Enemy_2(rand() % 600 + 1,
+				rand() % 600 + 1,
+				playerLevel));
+
+			spawnCount++;
+			enemyLeft++;
+		}
 	}
 	
 	else if (enemyLeft == 0 && killCount != 0)
@@ -133,6 +156,26 @@ void Game::killingUpdate()
 			{
 				exp += enemies_1[i]->getEXP();
 				enemies_1.erase(enemies_1.begin() + i);
+				killCount++;
+				enemyLeft--;
+			}
+		}
+	}
+
+	for (size_t i = 0; i < enemies_2.size(); i++)
+	{
+		if (enemies_2[i]->getBound().intersects(knife.getBound()) &&
+			sf::Keyboard::isKeyPressed(sf::Keyboard::Space) &&
+			knife.knifeHolding && enableToAttack)
+		{
+			if (enemies_2[i]->getHp() > 0)
+			{
+				enemies_2[i]->takeDamage(knife.knifeDamage(playerLevel));
+			}
+			if (enemies_2[i]->getHp() <= 0)
+			{
+				exp += enemies_2[i]->getEXP();
+				enemies_2.erase(enemies_2.begin() + i);
 				killCount++;
 				enemyLeft--;
 			}
@@ -171,10 +214,16 @@ void Game::render()
 	knife.render(*window);
 	for (size_t i = 0; i < enemies_1.size(); i++)
 	{
-		enemyUIUpdate(i);
+		enemy_1UIUpdate(i);
 		enemies_1[i]->render(*window);
-		window->draw(enemyHp);
+		window->draw(enemy_1Hp);
 		
+	}
+	for (size_t i = 0; i < enemies_2.size(); i++)
+	{
+		enemy_2UIUpdate(i);
+		enemies_2[i]->render(*window);
+		window->draw(enemy_2Hp);
 	}
 	gui.render(*window);
 

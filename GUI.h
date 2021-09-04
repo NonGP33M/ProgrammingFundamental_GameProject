@@ -7,6 +7,8 @@ private:
 	sf::Font font;
 	sf::Text exp;
 	sf::Text wave;
+	sf::Text enemy_1Hp;
+	sf::Text enemy_2Hp;
 public:
 	GUI();
 	void expUI(int currentEXP, int maxEXP, float posX, float posY);
