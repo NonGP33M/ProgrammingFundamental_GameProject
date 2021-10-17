@@ -4,10 +4,10 @@ GUI::GUI()
 {
 	font.loadFromFile("Font/dogica.ttf");
 	exp.setFont(font);
-	exp.setFillColor(sf::Color::Green);
+	exp.setFillColor(sf::Color::White);
 	exp.setCharacterSize(24);
 	this->wave.setFont(font);
-	this->wave.setFillColor(sf::Color::Green);
+	this->wave.setFillColor(sf::Color::White);
 	this->wave.setCharacterSize(24);
 	enemy_1Hp.setFont(font);
 	enemy_1Hp.setFillColor(sf::Color::White);
