@@ -2,10 +2,13 @@
 
 Player::Player()
 {
-	playerSprite.setPosition(720.f, 450.f);
 	playerTexture.loadFromFile("Texture/Player.png");
 	playerSprite.setTexture(playerTexture);
 	playerSprite.setScale(3.f, 3.f);
+	playerSprite.setOrigin(playerSprite.getLocalBounds().width / 2,
+		playerSprite.getLocalBounds().height / 2);
+	playerSprite.setPosition(720.f, 450.f);
+	
 }
 
 void Player::movement()

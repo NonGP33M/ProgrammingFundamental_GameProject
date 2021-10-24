@@ -1,8 +1,7 @@
 #pragma once
 #include "Player.h"
-#include "Enemy_1.h"
-#include "Enemy_2.h"
-#include "Knife.h"
+#include "Enemy.h"
+#include "WeaponHitbox.h"
 #include "GUI.h"
 #include "ItemDrop.h"
 
@@ -17,20 +16,20 @@ private:
 	sf::Event event;
 	sf::Sprite background;
 	sf::Texture backgroundTexture;
-	sf::Text enemy_1Hp;
-	sf::Text enemy_2Hp;
+	sf::Text enemyHp;
 	sf::Font font;
+	sf::Clock attackCoolDownClock;
+	sf::Clock enemySpawningClock;
 
 	Player player;
-	std::vector<Enemy_1*> enemies_1;
-	Enemy_1* type_1;
-	std::vector<Enemy_2*> enemies_2;
-	Enemy_2* type_2;
+	std::vector<Enemy*> enemies;
+	Enemy* enemy;
 	std::vector<ItemDrop*> drop;
 	ItemDrop* item;
 	GUI gui;
-	Knife knife;
-
+	WeaponHitbox weaponHitbox;
+	
+	float deltaTime;
 	float playerBaseDamage;
 	float spawnTimer;
 	float spawnTimerMax;
@@ -38,11 +37,13 @@ private:
 	float attackTimerMax;
 	int currentSlot;
 	int weaponSlot[2] = { 1,0 };
+	int weaponDamage[2] = { 2,0 };
 	int playerLevel = 1;
 	bool attackCooldown;
 	bool enableToAttack;
+	bool duringWave;
 	int playerWeapon = DAGGER;
-	int wave = 1;
+	int wave = 0;
 	int enemyLeft;
 	int killCount = 0;
 	int spawnCount = 0;
@@ -53,15 +54,14 @@ public:
 	inline const bool running() { return window->isOpen(); }
 	void setting();
 	void pollEvent();
-	void UIupdate();
-	void enemy_1UIUpdate(int index);
-	void enemy_2UIUpdate(int index);
+	void playerUIupdate();
+	void enemyUIUpdate(int index);
 	void takeItemUpdate();
 	void attackUpdate();
 	void playerAttackRange();
 	void levelUpdate();
+	void enemyInit();
 	void enemyUpdate();
-	void killingUpdate();
 	void update();
 	void render();
 };

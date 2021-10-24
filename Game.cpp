@@ -4,7 +4,7 @@ void Game::setting()
 {
 	this->video.width = 1440.f;
 	this->video.height = 900.f;
-	this->window = new RenderWindow(video, "Game_2");
+	this->window = new sf::RenderWindow(video, "Game_2");
 	this->window->setFramerateLimit(144.f);
 	view.setSize(1440.f, 900.f);
 
@@ -15,29 +15,31 @@ void Game::setting()
 	background.setTexture(backgroundTexture);
 
 	spawnTimerMax = 100.f;
-	attackTimerMax = 50.f;
 
 	font.loadFromFile("Font/dogica.ttf");
-	enemy_1Hp.setFont(font);
-	enemy_2Hp.setFont(font);
+	enemyHp.setFont(font);
+	enemyHp.setFillColor(sf::Color::White);
+	enemyHp.setCharacterSize(16);
+
+	duringWave = false;
 }
 
 void Game::pollEvent()
 {
 	while (window->pollEvent(event))
 	{
-		if (event.type == Event::Closed)
+		if (event.type == sf::Event::Closed)
 			window->close();
 
-		if (Keyboard::isKeyPressed(Keyboard::Num1))
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
 			currentSlot = 0;
 
-		if (Keyboard::isKeyPressed(Keyboard::Num2))
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
 			currentSlot = 1;
 	}
 }
 
-void Game::UIupdate()
+void Game::playerUIupdate()
 {
 	gui.expUI(exp, expMax, player.getPos().x - 700, player.getPos().y - 430);
 	gui.waveUI(wave, player.getPos().x + 475, player.getPos().y - 430);
@@ -47,50 +49,48 @@ void Game::takeItemUpdate()
 {
 	for (size_t i = 0; i < drop.size(); i++)
 	{
-		if (Keyboard::isKeyPressed(Keyboard::E)
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::E)
 			&& drop[i]->getBound().intersects(player.getBound()))
 		{
-			if(weaponSlot[0] == 0)
+			if (weaponSlot[0] == 0)
+			{
 				weaponSlot[0] = drop[i]->getType();
-			else if(weaponSlot[1] == 0)
+				currentSlot = 0;
+				weaponDamage[0] = drop[i]->getDamage();
+			}
+			else if (weaponSlot[1] == 0)
+			{
 				weaponSlot[1] = drop[i]->getType();
+				currentSlot = 1;
+				weaponDamage[1] = drop[i]->getDamage();
+			}
 			else
+			{
 				weaponSlot[currentSlot] = drop[i]->getType();
+				weaponDamage[currentSlot] = drop[i]->getDamage();
+			}
 			drop.erase(drop.begin() + i);
 		}
 	}
 }
 
-void Game::enemy_1UIUpdate(int index)
-{
-	enemy_1Hp.setFillColor(Color::White);
-	enemy_1Hp.setCharacterSize(16);
-	enemy_1Hp.setString(to_string(enemies_1[index]->getHp()) + "/" + to_string(enemies_1[index]->getMaxHp()));
-	enemy_1Hp.setPosition(enemies_1[index]->getPos().x, enemies_1[index]->getPos().y - 50);
-}
-
-void Game::enemy_2UIUpdate(int index)
-{
-	enemy_2Hp.setFillColor(Color::White);
-	enemy_2Hp.setCharacterSize(16);
-	enemy_2Hp.setString(to_string(enemies_2[index]->getHp()) + "/" + to_string(enemies_2[index]->getMaxHp()));
-	enemy_2Hp.setPosition(enemies_2[index]->getPos().x, enemies_2[index]->getPos().y - 50);
-}
-
 void Game::attackUpdate()
 {
+	attackTimer = attackCoolDownClock.getElapsedTime().asSeconds();
 	enableToAttack = false;
 	if (playerWeapon == DAGGER)
-		attackTimer += 0.5f;
+		attackTimerMax = 0.5f;
+	if (playerWeapon == SWORD)
+		attackTimerMax = 1.f;
 
 	if (attackTimer >= attackTimerMax)
 	{
-		cout << "Enable to Attack" << endl;
+		std::cout << "Enable to Attack" << std::endl;
 		attackCooldown = true;
-		if (Keyboard::isKeyPressed(Keyboard::Space))
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
 		{
 			attackCooldown = false;
-			attackTimer = 0.f;
+			attackCoolDownClock.restart();
 		}
 		if (!attackCooldown)
 		{
@@ -99,32 +99,31 @@ void Game::attackUpdate()
 	}
 	else
 	{
-		cout << "Unable to Attack" << endl;
+		std::cout << "Unable to Attack" << std::endl;
 	}
 
-	cout << "Current : ";
+	std::cout << "Current : ";
 	if (playerWeapon == NOTHING)
 	{
-		cout << "Bare hand" << endl;
-		cout << "Damage : " << "0" << endl;
+		std::cout << "Bare hand" << std::endl;
 	}
 	if (playerWeapon == DAGGER)
 	{
-		cout << "Dagger" << endl;
-		cout << "Damage : " << knife.knifeDamage(playerLevel) << "+" << playerBaseDamage << endl;
+		std::cout << "Dagger" << std::endl;
 	}
 	if (playerWeapon == SWORD)
 	{
-		cout << "Sword" << endl;
-		cout << "Damage : " << "NULL" << endl;
+		std::cout << "Sword" << std::endl;
 	}
-	cout << endl;
+
+	std::cout << "Damage : " << weaponDamage[currentSlot] << "+" << playerBaseDamage << std::endl;
+	std::cout << std::endl;
 }
 
 void Game::playerAttackRange()
 {
-	knife.setPosition(player.getPos().x + 8, player.getPos().y + 8);
-
+	weaponHitbox.setHitbox(player.getPos().x + 8, 
+		player.getPos().y + 8, weaponSlot[currentSlot]);
 }
 
 void Game::levelUpdate()
@@ -146,115 +145,78 @@ void Game::levelUpdate()
 	}
 }
 
-void Game::enemyUpdate()
+void Game::enemyInit()
 {
-
-	if (spawnCount < 8 && spawnTimer == 0)
+	spawnTimer = enemySpawningClock.getElapsedTime().asSeconds();
+	if (spawnTimer >= 2.f && !duringWave)
 	{
-		enemyType = rand() % 2 + 1;
-		if (enemyType == 1)
+		wave++;
+		for (int i = 0; i < 8; i++)
 		{
-			enemies_1.push_back(new Enemy_1(rand() % 600 + 1,
-				rand() % 600 + 1,
-				wave));
-
-			spawnCount++;
+			enemyType = rand() % 2 + 1;
+			enemies.push_back(new Enemy(enemyType, rand() % 600 + 1,
+				rand() % 600 + 1,wave));
 			enemyLeft++;
 		}
-		else if (enemyType == 2)
-		{
-			enemies_2.push_back(new Enemy_2(rand() % 600 + 1,
-				rand() % 600 + 1,
-				wave));
-
-			spawnCount++;
-			enemyLeft++;
-		}
+		duringWave = true;
+	}
+	else if (enemyLeft == 0 && duringWave == true)
+	{
+		duringWave = false;
+		enemySpawningClock.restart();
 	}
 
-	else if (enemyLeft == 0 && killCount != 0)
+
+	for (size_t i = 0; i < enemies.size(); i++)
 	{
-		spawnCount = 0;
-	}
-	for (size_t i = 0; i < enemies_1.size(); i++)
-	{
-		enemies_1[i]->update();
-		enemies_1[i]->movement(player.getPos());
-	}
-	for (size_t i = 0; i < enemies_2.size(); i++)
-	{
-		enemies_2[i]->update();
-		enemies_2[i]->movement(player.getPos());
+		enemies[i]->update();
+		enemies[i]->movement(player.getPos());
 	}
 }
 
-void Game::killingUpdate()
+void Game::enemyUpdate()
 {
-	for (size_t i = 0; i < enemies_1.size(); i++)
+	for (size_t i = 0; i < enemies.size(); i++)
 	{
-		if (enemies_1[i]->getBound().intersects(knife.getBound()) &&
+		if (enemies[i]->getBound().intersects(weaponHitbox.getBound()) &&
 			sf::Keyboard::isKeyPressed(sf::Keyboard::Space) &&
 			playerWeapon != NOTHING && enableToAttack)
 		{
-			if (enemies_1[i]->getHp() > 0)
+			if (enemies[i]->getHp() > 0)
 			{
-				enemies_1[i]->takeDamage(knife.knifeDamage(playerLevel) + playerBaseDamage);
+				enemies[i]->takeDamage(weaponDamage[currentSlot] + playerBaseDamage);
 			}
-			if (enemies_1[i]->getHp() <= 0)
+			if (enemies[i]->getHp() <= 0)
 			{
-				exp += enemies_1[i]->getEXP();
+				exp += enemies[i]->getEXP();
 				if (rand() % 10 + 1 == 2)
-					drop.push_back(new ItemDrop(1, wave, enemies_1[i]->getPos()));
-				enemies_1.erase(enemies_1.begin() + i);
+					drop.push_back(new ItemDrop(enemyType, wave, enemies[i]->getPos()));
+				enemies.erase(enemies.begin() + i);
 				killCount++;
 				enemyLeft--;
 			}
 		}
 	}
-
-	for (size_t i = 0; i < enemies_2.size(); i++)
-	{
-		if (enemies_2[i]->getBound().intersects(knife.getBound()) &&
-			Keyboard::isKeyPressed(Keyboard::Space) &&
-			playerWeapon != NOTHING && enableToAttack)
-		{
-			if (enemies_2[i]->getHp() > 0)
-			{
-				enemies_2[i]->takeDamage(knife.knifeDamage(playerLevel) + playerBaseDamage);
-			}
-			if (enemies_2[i]->getHp() <= 0)
-			{
-				exp += enemies_2[i]->getEXP();
-				if (rand() % 10 + 1 == 2)
-					drop.push_back(new ItemDrop(2, wave, enemies_2[i]->getPos()));
-				enemies_2.erase(enemies_2.begin() + i);
-				killCount++;
-				enemyLeft--;
-			}
-		}
-	}
-
 }
 
 void Game::update()
 {
 	pollEvent();
-	UIupdate();
 	takeItemUpdate();
 	player.update();
 	playerAttackRange();
 	attackUpdate();
-	enemyUpdate();
+	enemyInit();
 	levelUpdate();
-	killingUpdate();
+	enemyUpdate();
+	playerUIupdate();
 
 	playerWeapon = weaponSlot[currentSlot];
 	playerBaseDamage = 2 + playerLevel;
 
-	cout << "PlayerLevel : " << playerLevel << " | ";
-	cout << "KillCount : " << killCount << " | ";
-	cout << "SpawnCount : " << spawnCount << " | ";
-	cout << "EnemyLeft : " << enemyLeft << endl;
+	std::cout << "PlayerLevel : " << playerLevel << " | ";
+	std::cout << "KillCount : " << killCount << " | ";
+	std::cout << "EnemyLeft : " << enemyLeft << std::endl;
 
 }
 
@@ -270,21 +232,19 @@ void Game::render()
 	{
 		drop[i]->render(*window);
 	}
+
 	player.render(*window);
-	knife.render(*window);
+	weaponHitbox.render(*window);
 
-	for (size_t i = 0; i < enemies_1.size(); i++)
+	for (size_t i = 0; i < enemies.size(); i++)
 	{
-		enemy_1UIUpdate(i);
-		enemies_1[i]->render(*window);
-		window->draw(enemy_1Hp);
-
+		enemies[i]->render(*window);
 	}
-	for (size_t i = 0; i < enemies_2.size(); i++)
+
+	for (size_t i = 0; i < enemies.size(); i++)
 	{
-		enemy_2UIUpdate(i);
-		enemies_2[i]->render(*window);
-		window->draw(enemy_2Hp);
+		gui.enemyUI(enemies[i]->getHp(), enemies[i]->getMaxHp(),
+			enemies[i]->getPos(), enemies[i]->getSize(), *window);
 	}
 	gui.render(*window);
 

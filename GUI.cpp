@@ -9,12 +9,16 @@ GUI::GUI()
 	this->wave.setFont(font);
 	this->wave.setFillColor(sf::Color::White);
 	this->wave.setCharacterSize(24);
-	enemy_1Hp.setFont(font);
-	enemy_1Hp.setFillColor(sf::Color::White);
-	enemy_1Hp.setCharacterSize(16);
-	enemy_2Hp.setFont(font);
-	enemy_2Hp.setFillColor(sf::Color::White);
-	enemy_2Hp.setCharacterSize(16);
+	enemyHp.setFont(font);
+	enemyHp.setFillColor(sf::Color::White);
+	enemyHp.setCharacterSize(16);
+}
+
+void GUI::enemyUI(int currentHp, int maxHp, sf::Vector2f pos, sf::Vector2f size, sf::RenderTarget& other)
+{
+	enemyHp.setString(std::to_string(currentHp) + "/" + std::to_string(maxHp));
+	enemyHp.setPosition(pos.x - enemyHp.getLocalBounds().width/2, pos.y - size.y / 2 - 35.f);
+	other.draw(enemyHp);
 }
 
 void GUI::expUI(int currentEXP, int maxEXP, float posX, float posY)
@@ -33,6 +37,4 @@ void GUI::render(sf::RenderTarget& other)
 { 
 	other.draw(exp);
 	other.draw(this->wave);
-	other.draw(enemy_1Hp);
-	other.draw(enemy_2Hp);
 }

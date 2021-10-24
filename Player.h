@@ -12,6 +12,7 @@ public:
 	Player();
 	inline const sf::FloatRect getBound() { return playerSprite.getGlobalBounds(); }
 	inline const sf::Vector2f getPos() { return playerSprite.getPosition(); }
+	inline const sf::Vector2u getSize() { return playerTexture.getSize(); }
 	void movement();
 	void update();
 	void render(sf::RenderTarget& other);
