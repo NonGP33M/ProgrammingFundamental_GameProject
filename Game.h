@@ -11,7 +11,6 @@ class Game
 {
 private:
 	sf::RenderWindow* window;
-	sf::VideoMode video;
 	sf::View view;
 	sf::Event event;
 	sf::Sprite background;
@@ -29,6 +28,7 @@ private:
 	GUI gui;
 	WeaponHitbox weaponHitbox;
 	
+	sf::Vector2f playerPos;
 	float deltaTime;
 	float playerBaseDamage;
 	float spawnTimer;
@@ -50,9 +50,13 @@ private:
 	int exp = 0;
 	int expMax;
 	int enemyType;
+
 public:
-	inline const bool running() { return window->isOpen(); }
-	void setting();
+	Game(sf::RenderWindow* window);
+	bool pause = false;
+	inline const sf::Vector2f getPlayerPos() { return this->playerPos; }
+	inline const bool pauseCheck() { return pause; }
+	inline const sf::Vector2f getViewPos() { return view.getCenter(); }
 	void pollEvent();
 	void playerUIupdate();
 	void enemyUIUpdate(int index);

@@ -12,13 +12,13 @@ void WeaponHitbox::setHitbox(float posX, float posY, int type)
 	if (type == 0)
 		size = 1000.f;
 	else if (type == 1)
-		size = 60.f;
-	else if (type == 2)
 		size = 100.f;
+	else if (type == 2)
+		size = 200.f;
 
 	Hitbox.setSize({ size,size });
 	Hitbox.setOrigin({ size / 2,size / 2 });
-	Hitbox.setPosition(posX, posY - size);
+	Hitbox.setPosition(posX - 8, posY - 8);
 }
 
 void WeaponHitbox::render(sf::RenderTarget& other)

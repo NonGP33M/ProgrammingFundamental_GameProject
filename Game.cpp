@@ -1,13 +1,8 @@
 #include "Game.h"
 
-void Game::setting()
+Game::Game(sf::RenderWindow* window)
 {
-	this->video.width = 1440.f;
-	this->video.height = 900.f;
-	this->window = new sf::RenderWindow(video, "Game_2");
-	this->window->setFramerateLimit(144.f);
-	view.setSize(1440.f, 900.f);
-
+	view.setSize(1920.f, 1080.f);
 	background.setOrigin(352.f, 160.f);
 	background.setPosition(720.f, 450.f);
 	background.setScale(4.f, 4.f);
@@ -22,6 +17,8 @@ void Game::setting()
 	enemyHp.setCharacterSize(16);
 
 	duringWave = false;
+
+	this->window = window;
 }
 
 void Game::pollEvent()
@@ -36,6 +33,8 @@ void Game::pollEvent()
 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
 			currentSlot = 1;
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
+			pause = true;
 	}
 }
 
@@ -43,6 +42,7 @@ void Game::playerUIupdate()
 {
 	gui.expUI(exp, expMax, player.getPos().x - 700, player.getPos().y - 430);
 	gui.waveUI(wave, player.getPos().x + 475, player.getPos().y - 430);
+	gui.weaponSlotUI(weaponSlot[currentSlot], player.getPos().x - 700, player.getPos().y + 400);
 }
 
 void Game::takeItemUpdate()
@@ -196,12 +196,18 @@ void Game::enemyUpdate()
 				enemyLeft--;
 			}
 		}
+		/*for (size_t j = 0; j < enemies.size(); j++)
+		{
+			if(i != j)
+				enemies[i]->checkObstruct(enemies[i]->getBound(), enemies[j]->getBound());
+		}*/
 	}
 }
 
 void Game::update()
 {
 	pollEvent();
+	getPlayerPos();
 	takeItemUpdate();
 	player.update();
 	playerAttackRange();

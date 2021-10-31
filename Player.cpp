@@ -38,6 +38,7 @@ void Player::movement()
 void Player::update()
 {
 	movement();
+	getPos();
 }
 
 void Player::render(sf::RenderTarget& other)

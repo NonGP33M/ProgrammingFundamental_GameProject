@@ -149,6 +149,8 @@
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GUI.cpp" />
     <ClCompile Include="ItemDrop.cpp" />
+    <ClCompile Include="Menu.cpp" />
+    <ClCompile Include="PauseMenu.cpp" />
     <ClCompile Include="WeaponHitbox.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Player.cpp" />
@@ -158,6 +160,8 @@
     <ClInclude Include="Game.h" />
     <ClInclude Include="GUI.h" />
     <ClInclude Include="ItemDrop.h" />
+    <ClInclude Include="Menu.h" />
+    <ClInclude Include="PauseMenu.h" />
     <ClInclude Include="WeaponHitbox.h" />
     <ClInclude Include="Player.h" />
   </ItemGroup>

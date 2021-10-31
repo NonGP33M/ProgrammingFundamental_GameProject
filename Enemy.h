@@ -6,12 +6,14 @@ class Enemy
 {
 private:
 	sf::RectangleShape enemy;
+	sf::FloatRect nextPos;
 	sf::Vector2f position;
 	sf::Vector2f size;
 	float MaxHp;
 	float currentHp;
 	float exp;
 	float movementSpeed;
+	sf::Vector2f dir;
 public:
 	Enemy(int type, float posX, float posY, float wave);
 	inline const sf::FloatRect getBound() { return enemy.getGlobalBounds(); }
@@ -22,6 +24,7 @@ public:
 	inline const sf::Vector2f getSize() { return size; }
 	void takeDamage(float damage);
 	void movement(sf::Vector2f playerPos);
+	void checkObstruct(sf::FloatRect thisPos, sf::FloatRect otherPos);
 	void update();
 	void render(sf::RenderTarget& other);
 };

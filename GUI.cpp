@@ -12,6 +12,10 @@ GUI::GUI()
 	enemyHp.setFont(font);
 	enemyHp.setFillColor(sf::Color::White);
 	enemyHp.setCharacterSize(16);
+	weapon.setFont(font);
+	weapon.setFillColor(sf::Color::White);
+	weapon.setCharacterSize(24);
+	weapon.setLineSpacing(2);
 }
 
 void GUI::enemyUI(int currentHp, int maxHp, sf::Vector2f pos, sf::Vector2f size, sf::RenderTarget& other)
@@ -23,7 +27,7 @@ void GUI::enemyUI(int currentHp, int maxHp, sf::Vector2f pos, sf::Vector2f size,
 
 void GUI::expUI(int currentEXP, int maxEXP, float posX, float posY)
 {
-	exp.setString(std::to_string(currentEXP) + "/" + std::to_string(maxEXP));
+	exp.setString("EXP:" + std::to_string(currentEXP) + "/" + std::to_string(maxEXP));
 	exp.setPosition(posX, posY);
 }
 
@@ -33,8 +37,20 @@ void GUI::waveUI(int wave, float posX, float posY)
 	this->wave.setPosition(posX, posY);
 }
 
+void GUI::weaponSlotUI(int current, float posX, float posY)
+{	
+	if (current == 0)
+		weapon.setString("WeaponUsing : Nothing");
+	else if (current == 1)
+		weapon.setString("WeaponUsing : Dagger");
+	else if (current == 2)
+		weapon.setString("WeaponUsing : Sword");
+	weapon.setPosition(posX, posY);
+}
+
 void GUI::render(sf::RenderTarget& other)
 { 
 	other.draw(exp);
 	other.draw(this->wave);
+	other.draw(weapon);
 }
