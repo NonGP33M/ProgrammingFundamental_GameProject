@@ -14,6 +14,7 @@ Enemy::Enemy(int type, float posX, float posY, float wave)
 		MaxHp = 10 * wave;
 		currentHp = MaxHp;
 		exp = 2.f;
+		damage = MaxHp / 5;
 	}
 	else if (type == 2)
 	{
@@ -27,6 +28,7 @@ Enemy::Enemy(int type, float posX, float posY, float wave)
 		MaxHp = 15 * wave;
 		currentHp = MaxHp;
 		exp = 5.f;
+		damage = MaxHp / 3;
 	}
 }
 

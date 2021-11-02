@@ -8,6 +8,7 @@ private:
 	sf::Sprite playerSprite;
 	sf::Texture playerTexture;
 	float movementSpeed = 2.f;
+
 public:
 	Player();
 	inline const sf::FloatRect getBound() { return playerSprite.getGlobalBounds(); }

@@ -13,6 +13,7 @@ private:
 	float currentHp;
 	float exp;
 	float movementSpeed;
+	float damage;
 	sf::Vector2f dir;
 public:
 	Enemy(int type, float posX, float posY, float wave);

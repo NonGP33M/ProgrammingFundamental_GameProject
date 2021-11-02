@@ -1,8 +1,7 @@
 #include "Game.h"
 
-Game::Game(sf::RenderWindow* window)
+Game::Game(sf::RenderWindow* window, sf::View view)
 {
-	view.setSize(1920.f, 1080.f);
 	background.setOrigin(352.f, 160.f);
 	background.setPosition(720.f, 450.f);
 	background.setScale(4.f, 4.f);
@@ -16,33 +15,28 @@ Game::Game(sf::RenderWindow* window)
 	enemyHp.setFillColor(sf::Color::White);
 	enemyHp.setCharacterSize(16);
 
+	maxPlayerHp = 20;
+	currentPlayerHp = maxPlayerHp;
+
 	duringWave = false;
 
 	this->window = window;
+	this->view = view;
 }
 
 void Game::pollEvent()
 {
-	while (window->pollEvent(event))
-	{
-		if (event.type == sf::Event::Closed)
-			window->close();
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
+		currentSlot = 0;
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
-			currentSlot = 0;
-
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
-			currentSlot = 1;
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
-			pause = true;
-	}
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
+		currentSlot = 1;
 }
 
-void Game::playerUIupdate()
+void Game::screenUIupdate()
 {
-	gui.expUI(exp, expMax, player.getPos().x - 700, player.getPos().y - 430);
-	gui.waveUI(wave, player.getPos().x + 475, player.getPos().y - 430);
-	gui.weaponSlotUI(weaponSlot[currentSlot], player.getPos().x - 700, player.getPos().y + 400);
+	gui.screenUI(view.getCenter(),exp, maxExp, wave, weaponSlot[currentSlot], 
+		weaponDamage[currentSlot], playerBaseDamage, currentPlayerHp, maxPlayerHp);
 }
 
 void Game::takeItemUpdate()
@@ -122,18 +116,24 @@ void Game::attackUpdate()
 
 void Game::playerAttackRange()
 {
-	weaponHitbox.setHitbox(player.getPos().x + 8, 
+	weaponHitbox.setHitbox(player.getPos().x + 8,
 		player.getPos().y + 8, weaponSlot[currentSlot]);
 }
 
-void Game::levelUpdate()
+void Game::playerLevelUpdate()
 {
-	expMax = 12 * playerLevel;
-	if (exp >= expMax)
+	maxExp = 12 * playerLevel;
+	playerBaseDamage = 2 + playerLevel;
+	maxPlayerHp = 15 + (playerLevel * 5);
+	if (exp >= maxExp)
 	{
 		exp = 0;
 		playerLevel++;
 	}
+}
+
+void Game::waveUpdate()
+{
 	if (spawnCount == 0)
 	{
 		spawnTimer += 0.1f;
@@ -151,11 +151,11 @@ void Game::enemyInit()
 	if (spawnTimer >= 2.f && !duringWave)
 	{
 		wave++;
-		for (int i = 0; i < 8; i++)
+		for (size_t i = 0; i < 8; i++)
 		{
 			enemyType = rand() % 2 + 1;
 			enemies.push_back(new Enemy(enemyType, rand() % 600 + 1,
-				rand() % 600 + 1,wave));
+				rand() % 600 + 1, wave));
 			enemyLeft++;
 		}
 		duringWave = true;
@@ -192,13 +192,14 @@ void Game::enemyUpdate()
 				if (rand() % 10 + 1 == 2)
 					drop.push_back(new ItemDrop(enemyType, wave, enemies[i]->getPos()));
 				enemies.erase(enemies.begin() + i);
+				currentPlayerHp -= 5;
 				killCount++;
 				enemyLeft--;
 			}
 		}
-		/*for (size_t j = 0; j < enemies.size(); j++)
+		/*for (size_t j = 0; j < i; j++)
 		{
-			if(i != j)
+			if(i != j && enemies[i] != nullptr && enemies[j] != nullptr)
 				enemies[i]->checkObstruct(enemies[i]->getBound(), enemies[j]->getBound());
 		}*/
 	}
@@ -209,16 +210,17 @@ void Game::update()
 	pollEvent();
 	getPlayerPos();
 	takeItemUpdate();
-	player.update();
 	playerAttackRange();
+	playerLevelUpdate();
 	attackUpdate();
 	enemyInit();
-	levelUpdate();
+	waveUpdate();
 	enemyUpdate();
-	playerUIupdate();
+	screenUIupdate();
+
+	player.update();
 
 	playerWeapon = weaponSlot[currentSlot];
-	playerBaseDamage = 2 + playerLevel;
 
 	std::cout << "PlayerLevel : " << playerLevel << " | ";
 	std::cout << "KillCount : " << killCount << " | ";
@@ -232,8 +234,9 @@ void Game::render()
 
 	view.setCenter(player.getPos());
 	window->setView(view);
-
+	
 	window->draw(background);
+
 	for (size_t i = 0; i < drop.size(); i++)
 	{
 		drop[i]->render(*window);
@@ -245,13 +248,10 @@ void Game::render()
 	for (size_t i = 0; i < enemies.size(); i++)
 	{
 		enemies[i]->render(*window);
-	}
-
-	for (size_t i = 0; i < enemies.size(); i++)
-	{
 		gui.enemyUI(enemies[i]->getHp(), enemies[i]->getMaxHp(),
 			enemies[i]->getPos(), enemies[i]->getSize(), *window);
 	}
+
 	gui.render(*window);
 
 	window->display();

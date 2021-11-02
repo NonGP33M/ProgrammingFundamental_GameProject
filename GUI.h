@@ -10,12 +10,13 @@ private:
 	sf::Text wave;
 	sf::Text enemyHp;
 	sf::Text weapon;
+	sf::RectangleShape maxHpBar;
+	sf::RectangleShape currentHpBar;
 public:
 	GUI();
 	void enemyUI(int currentHp, int maxHp, sf::Vector2f pos, sf::Vector2f size, sf::RenderTarget& other);
-	void expUI(int currentEXP, int maxEXP, float posX, float posY);
-	void waveUI(int wave, float posX, float posY);
-	void weaponSlotUI(int current, float posX, float posY);
+	void screenUI(sf::Vector2f pos,int currentEXP, int maxEXP, int wave, 
+		int currentWeapon, int weaponDamage, int baseDamage, float currentPlayerHp, float maxPlayerHp);
 	void render(sf::RenderTarget& other);
 };
 
