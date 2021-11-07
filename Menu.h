@@ -1,7 +1,8 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include "Game.h"
 
-enum STATE { MENU, PLAY, PAUSE, GAMEOVER, LEADERBOARD };
+enum STATE { MENU, PLAY, PAUSE, LEADERBOARD, GAMEOVER};
 
 class Menu
 {
@@ -9,14 +10,18 @@ private:
 	sf::Event event;
 	sf::View view;
 	sf::Font font;
+	sf::Vector2f buttonSize = { 350.f, 80.f };
 
 	//MAIN_MENU
 	sf::Text title;
 	sf::Text playButtonText;
+	sf::Text leaderBoardButtonText;
 	sf::Text exitButtonText;
 	sf::RenderWindow* window;
 	sf::RectangleShape playButton;
+	sf::RectangleShape leaderBoardButton;
 	sf::RectangleShape exitButton;
+	sf::RectangleShape mainBackground;
 
 	//PAUSE_MENU
 	sf::Text resumeButtonText;
@@ -25,22 +30,34 @@ private:
 	sf::RectangleShape resumeButton;
 	sf::RectangleShape mainMenuButton;
 
-	//GAMEOVER
+	//LEADERBOARD_MENU
+	sf::Text leaderBoardTitle;
+	sf::Text backButtonText;
+	sf::RectangleShape frame;
+	sf::RectangleShape backButton;
+
+	//GAMEOVER_MENU
+	sf::Text gameOverTitle;
 	sf::Text tryAgainButtonText;
 	sf::RectangleShape tryAgainButton;
 
-	bool pausing;
+	bool tryAgainClick = false;
 	int states;
 public:
 	Menu(sf::RenderWindow* window, sf::View view);
 	inline int getStates() { return states; }
+	inline bool tryAgainCheck() { return tryAgainClick; }
+	inline void tryAgainClickSetToFalse() { tryAgainClick = false; }
+	inline void gameOver() { states = GAMEOVER; }
+	inline void tryAgain() { states = PLAY; }
 	void pauseCheck();
-	void gameOverCheck();
 	void mainMenuUpdate();
 	void mainMenuRender();
+	void leaderBoardMenuUpdate();
+	void leaderBoardMenuRender();
 	void pauseMenuUpdate();
 	void pauseMenuRender();
-	void gameOverUpdate();
-	void gameOverRender();
+	void gameOverMenuUpdate();
+	void gameOverMenuRender();
 };
 

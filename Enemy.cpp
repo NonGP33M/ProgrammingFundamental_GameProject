@@ -89,4 +89,3 @@ void Enemy::render(sf::RenderTarget& other)
 {
 	other.draw(enemy);
 }
-

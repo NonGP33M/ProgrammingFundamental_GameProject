@@ -2,7 +2,7 @@
 
 GUI::GUI()
 {
-	font.loadFromFile("Font/dogica.ttf");
+	font.loadFromFile("Font/Retro Gaming.ttf");
 
 	exp.setFont(font);
 	exp.setFillColor(sf::Color::White);
@@ -48,7 +48,7 @@ void GUI::screenUI(sf::Vector2f pos, int currentEXP, int maxEXP, int wave, int c
 	currentHpBar.setSize({ 400.f * (currentPlayerHp / maxPlayerHp),40.f });
 
 	if (currentWeapon == 0)
-		weapon.setString("WeaponUsing : Nothing (" + std::to_string(weaponDamage) + "+" + std::to_string(baseDamage) + ")");
+		weapon.setString("WeaponUsing : Nothing (NO DAMAGE)");
 	else if (currentWeapon == 1)
 		weapon.setString("WeaponUsing : Dagger (" + std::to_string(weaponDamage) + "+" + std::to_string(baseDamage) + ")");
 	else if (currentWeapon == 2)

@@ -29,7 +29,6 @@ private:
 	WeaponHitbox weaponHitbox;
 	
 	sf::Vector2f playerPos;
-	float deltaTime;
 	float playerBaseDamage;
 	float spawnTimer;
 	float spawnTimerMax;
@@ -50,6 +49,7 @@ private:
 	bool attackCooldown;
 	bool enableToAttack;
 	bool duringWave;
+	bool gameOver = false;
 	
 	int wave = 0;
 	int enemyLeft;
@@ -59,8 +59,8 @@ private:
 
 public:
 	Game(sf::RenderWindow* window, sf::View view);
-	inline const sf::Vector2f getPlayerPos() { return this->playerPos; }
 	inline const sf::Vector2f getViewPos() { return view.getCenter(); }
+	inline const bool gameOverCheck() { return gameOver; }
 	void pollEvent();
 	void screenUIupdate();
 	void takeItemUpdate();
@@ -68,8 +68,8 @@ public:
 	void playerAttackRange();
 	void playerLevelUpdate();
 	void waveUpdate();
-	void enemyInit();
 	void enemyUpdate();
 	void update();
 	void render();
+	void gameReset();
 };

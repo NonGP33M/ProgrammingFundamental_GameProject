@@ -8,15 +8,17 @@ Game::Game(sf::RenderWindow* window, sf::View view)
 	backgroundTexture.loadFromFile("Texture/Background.png");
 	background.setTexture(backgroundTexture);
 
-	spawnTimerMax = 100.f;
+	spawnTimerMax = 10.f;
 
-	font.loadFromFile("Font/dogica.ttf");
+	font.loadFromFile("Font/Retro Gaming.ttf");
+
 	enemyHp.setFont(font);
-	enemyHp.setFillColor(sf::Color::White);
 	enemyHp.setCharacterSize(16);
+	enemyHp.setFillColor(sf::Color::White);
 
-	maxPlayerHp = 20;
+	maxPlayerHp = 20.f;
 	currentPlayerHp = maxPlayerHp;
+
 
 	duringWave = false;
 
@@ -35,7 +37,7 @@ void Game::pollEvent()
 
 void Game::screenUIupdate()
 {
-	gui.screenUI(view.getCenter(),exp, maxExp, wave, weaponSlot[currentSlot], 
+	gui.screenUI(player.getPos(), exp, maxExp, wave, weaponSlot[currentSlot],
 		weaponDamage[currentSlot], playerBaseDamage, currentPlayerHp, maxPlayerHp);
 }
 
@@ -83,6 +85,7 @@ void Game::attackUpdate()
 		attackCooldown = true;
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
 		{
+			currentPlayerHp -= 5;
 			attackCooldown = false;
 			attackCoolDownClock.restart();
 		}
@@ -95,23 +98,6 @@ void Game::attackUpdate()
 	{
 		std::cout << "Unable to Attack" << std::endl;
 	}
-
-	std::cout << "Current : ";
-	if (playerWeapon == NOTHING)
-	{
-		std::cout << "Bare hand" << std::endl;
-	}
-	if (playerWeapon == DAGGER)
-	{
-		std::cout << "Dagger" << std::endl;
-	}
-	if (playerWeapon == SWORD)
-	{
-		std::cout << "Sword" << std::endl;
-	}
-
-	std::cout << "Damage : " << weaponDamage[currentSlot] << "+" << playerBaseDamage << std::endl;
-	std::cout << std::endl;
 }
 
 void Game::playerAttackRange()
@@ -124,30 +110,26 @@ void Game::playerLevelUpdate()
 {
 	maxExp = 12 * playerLevel;
 	playerBaseDamage = 2 + playerLevel;
-	maxPlayerHp = 15 + (playerLevel * 5);
+
 	if (exp >= maxExp)
 	{
 		exp = 0;
 		playerLevel++;
+		maxPlayerHp = 15 + (playerLevel * 5);
+		currentPlayerHp = maxPlayerHp;
 	}
+	
+
+	if (currentPlayerHp <= 0)
+		gameOver = true;
+
+	
 }
 
 void Game::waveUpdate()
 {
-	if (spawnCount == 0)
-	{
-		spawnTimer += 0.1f;
-		if (spawnTimer >= spawnTimerMax)
-		{
-			spawnTimer = 0;
-			wave++;
-		}
-	}
-}
-
-void Game::enemyInit()
-{
 	spawnTimer = enemySpawningClock.getElapsedTime().asSeconds();
+
 	if (spawnTimer >= 2.f && !duringWave)
 	{
 		wave++;
@@ -165,7 +147,6 @@ void Game::enemyInit()
 		duringWave = false;
 		enemySpawningClock.restart();
 	}
-
 
 	for (size_t i = 0; i < enemies.size(); i++)
 	{
@@ -192,7 +173,6 @@ void Game::enemyUpdate()
 				if (rand() % 10 + 1 == 2)
 					drop.push_back(new ItemDrop(enemyType, wave, enemies[i]->getPos()));
 				enemies.erase(enemies.begin() + i);
-				currentPlayerHp -= 5;
 				killCount++;
 				enemyLeft--;
 			}
@@ -207,24 +187,23 @@ void Game::enemyUpdate()
 
 void Game::update()
 {
+	player.update();
+
 	pollEvent();
-	getPlayerPos();
+	screenUIupdate();
 	takeItemUpdate();
 	playerAttackRange();
 	playerLevelUpdate();
 	attackUpdate();
-	enemyInit();
 	waveUpdate();
 	enemyUpdate();
-	screenUIupdate();
-
-	player.update();
 
 	playerWeapon = weaponSlot[currentSlot];
 
 	std::cout << "PlayerLevel : " << playerLevel << " | ";
 	std::cout << "KillCount : " << killCount << " | ";
 	std::cout << "EnemyLeft : " << enemyLeft << std::endl;
+	std::cout << currentPlayerHp << " : " << maxPlayerHp << std::endl;
 
 }
 
@@ -234,7 +213,7 @@ void Game::render()
 
 	view.setCenter(player.getPos());
 	window->setView(view);
-	
+
 	window->draw(background);
 
 	for (size_t i = 0; i < drop.size(); i++)
@@ -255,4 +234,36 @@ void Game::render()
 	gui.render(*window);
 
 	window->display();
+}
+
+void Game::gameReset()
+{
+	player.reset();
+	enemySpawningClock.restart();
+	spawnTimer = 0;
+	spawnTimerMax = 100.f;
+
+	currentSlot = 0;
+	weaponSlot[0] = 1;
+	weaponSlot[1] = 0;
+	weaponDamage[0] = 2;
+	weaponDamage[1] = 0;
+
+	playerLevel = 1;
+	maxPlayerHp = 20.f;
+	currentPlayerHp = maxPlayerHp;
+	exp = 0;
+
+	playerWeapon = DAGGER;
+
+	wave = 0;
+	enemyLeft;
+	killCount = 0;
+	spawnCount = 0;
+
+	duringWave = false;
+	gameOver = false;
+
+	drop.clear();
+	enemies.clear();
 }

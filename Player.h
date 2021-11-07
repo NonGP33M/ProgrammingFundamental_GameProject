@@ -17,5 +17,6 @@ public:
 	void movement();
 	void update();
 	void render(sf::RenderTarget& other);
+	void reset();
 };
 

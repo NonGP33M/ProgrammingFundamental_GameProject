@@ -1,5 +1,4 @@
 #include "Menu.h"
-#include "Game.h"
 #include <time.h>
 
 int main()
@@ -40,23 +39,42 @@ int main()
 		{
 			if (state == MENU)
 			{
+				game.gameReset();
 				menu.mainMenuUpdate();
 				menu.mainMenuRender();
 			}
-			if (state == 1)
+			if (state == PLAY)
 			{
-				game.update();
-				menu.pauseCheck();
-				game.render();
+				if (!game.gameOverCheck())
+				{
+					game.update();
+					menu.pauseCheck();
+					game.render();
+				}
+				else
+					menu.gameOver();
 			}
-			if (state == 2)
+			if (state == PAUSE)
 			{
 				menu.pauseMenuUpdate();
 				menu.pauseMenuRender();
 			}
-			if (state == 4)
+
+			if (state == LEADERBOARD)
 			{
-				window.close();
+				menu.leaderBoardMenuUpdate();
+				menu.leaderBoardMenuRender();
+			}
+			if (state == GAMEOVER)
+			{
+				menu.gameOverMenuUpdate();
+				menu.gameOverMenuRender();
+				if (menu.tryAgainCheck())
+				{
+					game.gameReset();
+					menu.tryAgainClickSetToFalse();
+					menu.tryAgain();
+				}
 			}
 		}
 	}
