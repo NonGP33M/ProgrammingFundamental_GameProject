@@ -1,16 +1,19 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include "Game.h"
+#include "Score.h"
 
 enum STATE { MENU, PLAY, PAUSE, LEADERBOARD, GAMEOVER};
 
 class Menu
 {
 private:
+	Score score;
 	sf::Event event;
 	sf::View view;
 	sf::Font font;
 	sf::Vector2f buttonSize = { 350.f, 80.f };
+	sf::Clock debounce;
 
 	//MAIN_MENU
 	sf::Text title;
@@ -42,6 +45,8 @@ private:
 	sf::RectangleShape tryAgainButton;
 
 	bool tryAgainClick = false;
+	bool transition = false;
+	float transitionDebounce;
 	int states;
 public:
 	Menu(sf::RenderWindow* window, sf::View view);

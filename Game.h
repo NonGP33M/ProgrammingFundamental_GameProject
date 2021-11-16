@@ -13,7 +13,7 @@ private:
 	sf::RenderWindow* window;
 	sf::View view;
 	sf::Event event;
-	sf::Sprite background;
+	sf::RectangleShape background;
 	sf::Texture backgroundTexture;
 	sf::Font font;
 	sf::Text enemyHp;
@@ -35,9 +35,9 @@ private:
 	float attackTimer;
 	float attackTimerMax;
 
-	int currentSlot;
-	int weaponSlot[2] = { 1,0 };
-	int weaponDamage[2] = { 2,0 };
+	int currentSlot = 0;
+	int weaponSlot[2];
+	int weaponDamage[2];
 
 	int playerLevel = 1;
 	int currentPlayerHp;
@@ -45,6 +45,9 @@ private:
 	int exp = 0;
 	int maxExp;
 	int playerWeapon = DAGGER;
+
+	std::string spawner;
+	char enemyType;
 
 	bool attackCooldown;
 	bool enableToAttack;
@@ -55,7 +58,6 @@ private:
 	int enemyLeft;
 	int killCount = 0;
 	int spawnCount = 0;
-	int enemyType;
 
 public:
 	Game(sf::RenderWindow* window, sf::View view);

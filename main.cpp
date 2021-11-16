@@ -12,7 +12,7 @@ int main()
 	Game game(&window, view);
 	Menu menu(&window, view);
 	Player player;
-	
+
 	bool onScreen = true;
 	while (window.isOpen())
 	{
@@ -64,6 +64,7 @@ int main()
 			{
 				menu.leaderBoardMenuUpdate();
 				menu.leaderBoardMenuRender();
+				
 			}
 			if (state == GAMEOVER)
 			{

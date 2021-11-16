@@ -66,7 +66,7 @@ Menu::Menu(sf::RenderWindow* window, sf::View view)
 	backButtonText.setFillColor(sf::Color::White);
 	backButtonText.setOrigin(backButtonText.getLocalBounds().width / 2, backButtonText.getLocalBounds().height);
 
-	backButton.setSize(buttonSize);
+	backButton.setSize({ 150.f, 75.f });
 	backButton.setOrigin(backButton.getLocalBounds().width / 2, backButton.getLocalBounds().height / 2);
 	backButton.setFillColor(sf::Color::Transparent);
 	backButton.setOutlineColor(sf::Color::White);
@@ -150,7 +150,9 @@ void Menu::mainMenuUpdate()
 		playButtonText.setScale(1.5f, 1.5f);
 		playButton.setScale(1.2f, 1.2f);
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+		{
 			states = PLAY;
+		}
 	}
 	else
 	{
@@ -163,7 +165,9 @@ void Menu::mainMenuUpdate()
 		leaderBoardButtonText.setScale(1.5f, 1.5f);
 		leaderBoardButton.setScale(1.2f, 1.2f);
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+		{
 			states = LEADERBOARD;
+		}
 	}
 	else
 	{
@@ -210,15 +214,17 @@ void Menu::leaderBoardMenuUpdate()
 
 	frame.setPosition(view.getCenter().x, view.getCenter().y);
 
-	backButtonText.setPosition(view.getCenter().x, view.getCenter().y + 300);
-	backButton.setPosition(view.getCenter().x, view.getCenter().y + 300);
+	backButtonText.setPosition(view.getCenter().x - 320, view.getCenter().y + 260);
+	backButton.setPosition(view.getCenter().x - 320, view.getCenter().y + 260);
 	
 	if (backButton.getGlobalBounds().contains(screenPos))
 	{
 		backButtonText.setScale(1.5f, 1.5f);
 		backButton.setScale(1.2f, 1.2f);
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+		{
 			states = MENU;
+		}
 	}
 	else
 	{
@@ -236,6 +242,8 @@ void Menu::leaderBoardMenuRender()
 	window->draw(frame);
 	window->draw(backButton);
 	window->draw(backButtonText);
+
+	score.render(*window, view);
 
 	window->display();
 }
@@ -258,7 +266,9 @@ void Menu::pauseMenuUpdate()
 		resumeButtonText.setScale(1.5f, 1.5f);
 		resumeButton.setScale(1.2f, 1.2f);
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+		{
 			states = PLAY;
+		}
 	}
 	else
 	{
@@ -314,7 +324,9 @@ void Menu::gameOverMenuUpdate()
 		tryAgainButtonText.setScale(1.5f, 1.5f);
 		tryAgainButton.setScale(1.2f, 1.2f);
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+		{
 			tryAgainClick = true;
+		}
 	}
 	else
 	{
@@ -327,7 +339,9 @@ void Menu::gameOverMenuUpdate()
 		mainMenuButtonText.setScale(1.5f, 1.5f);
 		mainMenuButton.setScale(1.2f, 1.2f);
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+		{
 			states = MENU;
+		}
 	}
 	else
 	{

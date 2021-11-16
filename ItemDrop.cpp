@@ -3,12 +3,12 @@
 ItemDrop::ItemDrop(int type, int wave, sf::Vector2f enemyPos)
 {
 	drop.setRadius(15);
-	if (type == 1)
+	if (type == 0)
 		drop.setFillColor(sf::Color::Black);
-	if (type == 2)
+	if (type == 1)
 		drop.setFillColor(sf::Color::White);
 	drop.setPosition(enemyPos);
-	weaponType = type;
+	weaponType = type + 1;
 	if (weaponType == 1)
 		damage = 2 * wave + (rand() % 5);
 	else if (weaponType == 2)

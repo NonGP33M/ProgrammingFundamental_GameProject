@@ -1,47 +1,58 @@
 #include "Enemy.h"
 
-Enemy::Enemy(int type, float posX, float posY, float wave)
+Enemy::Enemy(char type, float posX, float posY, float wave)
 {
-	if (type == 1)
+	if (type != 49)
 	{
-		size = { 50.f, 50.f };
-		enemy.setOrigin(25.f, 25.f);
+		size = { 64.f, 64.f };
+		enemy.setOrigin(32.f, 32.f);
 		enemy.setSize(size);
-		enemy.setPosition(posX, posY);
 		enemy.setFillColor(sf::Color::Green);
-		movementSpeed = 0.4f;
-		dir = { 1.f,1.f };
+
+		enemyHitBox.setSize(size);
+
+		movementSpeed = 0.4f + 0.1 * wave;
 		MaxHp = 10 * wave;
-		currentHp = MaxHp;
 		exp = 2.f;
 		damage = MaxHp / 5;
+		this->type = 0;
 	}
-	else if (type == 2)
+	else
 	{
-		size = { 75.f, 75.f };
-		enemy.setOrigin(37.5f, 37.5f);
+		size = { 128.f, 128.f };
+		enemy.setOrigin(64.f, 64.f);
 		enemy.setSize(size);
-		enemy.setPosition(posX, posY);
 		enemy.setFillColor(sf::Color::Blue);
-		movementSpeed = 0.3f;
-		dir = { 1.f,1.f };
-		MaxHp = 15 * wave;
-		currentHp = MaxHp;
+
+		enemyHitBox.setSize(size);
+
+		movementSpeed = 0.2f + 0.1 * wave;
+		MaxHp = 20 * wave;
 		exp = 5.f;
 		damage = MaxHp / 3;
+		this->type = 1;
 	}
+
+	enemy.setPosition(posX, posY);
+	enemyHitBox.setFillColor(sf::Color::Transparent);
+	enemyHitBox.setOutlineThickness(1.f);
+	enemyHitBox.setOutlineColor(sf::Color::Red);
+	currentHp = MaxHp;
+	dir = { 1.f,1.f };
 }
 
-void Enemy::movement(sf::Vector2f playerPos)
+void Enemy::movement(sf::Vector2f playerPos, sf::Vector2f playerHitBoxPos)
 {
-	if (position.x < playerPos.x || position.y > playerPos.y)
-		enemy.move(movementSpeed * dir.x, movementSpeed * -dir.y);
-	if (position.x < playerPos.x || position.y < playerPos.y)
-		enemy.move(movementSpeed * dir.x, movementSpeed * dir.y);
-	if (position.x > playerPos.x || position.y < playerPos.y)
-		enemy.move(movementSpeed * -dir.x, movementSpeed * dir.y);
-	if (position.x > playerPos.x || position.y > playerPos.y)
-		enemy.move(movementSpeed * -dir.x, movementSpeed * -dir.y);
+	position = enemy.getPosition();
+	dir = playerPos - enemy.getPosition();
+	normalizedDir = dir / sqrt(dir.x * dir.x + dir.y * dir.y);
+	enemy.move(movementSpeed * normalizedDir.x, movementSpeed * normalizedDir.y);
+
+	enemyHitBox.setPosition(nextPos.left, nextPos.top);
+	enemyHitBox.move(movementSpeed * normalizedDir.x * 50, movementSpeed * normalizedDir.y * 50);
+
+	knockbackDir = playerHitBoxPos - enemy.getPosition();
+	normalizedKnockbackDir = knockbackDir / sqrt(knockbackDir.x * knockbackDir.x + knockbackDir.y * knockbackDir.y);
 }
 
 void Enemy::checkObstruct(sf::FloatRect thisPos, sf::FloatRect otherPos)
@@ -49,23 +60,44 @@ void Enemy::checkObstruct(sf::FloatRect thisPos, sf::FloatRect otherPos)
 	nextPos = thisPos;
 	nextPos.left += 1.f;
 	nextPos.top += 1.f;
+
 	if (nextPos.intersects(otherPos))
 	{
 		//right
-		if (thisPos.left + thisPos.width < otherPos.left + otherPos.width &&
+		if (thisPos.left < otherPos.left &&
+			thisPos.left + thisPos.width < otherPos.left + otherPos.width &&
 			thisPos.top + thisPos.height > otherPos.top &&
 			thisPos.top < otherPos.top + otherPos.height)
 		{
-			enemy.setPosition(thisPos.left + thisPos.width/2, enemy.getPosition().y);
+			enemy.setPosition(enemy.getPosition().x - 1.f, enemy.getPosition().y);
 			dir.x = 0;
 		}
 		//left
-		if (thisPos.left + thisPos.width > otherPos.left + otherPos.width &&
+		else if (thisPos.left > otherPos.left &&
+			thisPos.left + thisPos.width > otherPos.left + otherPos.width &&
 			thisPos.top + thisPos.height > otherPos.top &&
 			thisPos.top < otherPos.top + otherPos.height)
 		{
 			enemy.setPosition(enemy.getPosition().x + 1.f, enemy.getPosition().y);
 			dir.x = 0;
+		}
+		//top
+		else if (thisPos.top > otherPos.top &&
+			thisPos.top + thisPos.height > otherPos.top + otherPos.height &&
+			thisPos.left + thisPos.width > otherPos.left &&
+			thisPos.left < otherPos.left + otherPos.width)
+		{
+			enemy.setPosition(enemy.getPosition().x, enemy.getPosition().y + 1.f);
+			dir.y = 0;
+		}
+		//bottom
+		else if (thisPos.top < otherPos.top &&
+			thisPos.top + thisPos.height < otherPos.top + otherPos.height &&
+			thisPos.left + thisPos.width > otherPos.left &&
+			thisPos.left < otherPos.left + otherPos.width)
+		{
+			enemy.setPosition(enemy.getPosition().x, enemy.getPosition().y - 1.f);
+			dir.y = 0;
 		}
 	}
 	else
@@ -73,19 +105,55 @@ void Enemy::checkObstruct(sf::FloatRect thisPos, sf::FloatRect otherPos)
 		dir.x = 1.f;
 		dir.y = 1.f;
 	}
+
 }
 
 void Enemy::update()
 {
 	position = getPos();
+	attackCooldown();
+}
+
+void Enemy::attackCooldown()
+{
+	attackTimer = attackClock.getElapsedTime().asSeconds();
+	enableToAttack = false;
+	if (attackTimer >= 2.f)
+	{
+		cooldown = false;
+	}
+	else
+	{
+		cooldown = true;
+	}
+	if (!cooldown)
+	{
+		enableToAttack = true;
+	}
+}
+
+void Enemy::doDamage(int& playerHp)
+{
+	if (enableToAttack)
+	{
+		playerHp -= damage;
+		attackClock.restart();
+	}
 }
 
 void Enemy::takeDamage(float damage)
 {
 	currentHp -= damage;
+	knockBack();
+}
+
+void Enemy::knockBack()
+{
+	enemy.move(0.4f * 250.f * -normalizedKnockbackDir.x, 0.4f * 250.f * -normalizedKnockbackDir.y);
 }
 
 void Enemy::render(sf::RenderTarget& other)
 {
 	other.draw(enemy);
+	other.draw(enemyHitBox);
 }

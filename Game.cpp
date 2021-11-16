@@ -2,11 +2,11 @@
 
 Game::Game(sf::RenderWindow* window, sf::View view)
 {
-	background.setOrigin(352.f, 160.f);
+	background.setSize({ 2048.f, 2048.f });
+	background.setOrigin(background.getSize().x / 2, background.getSize().y / 2);
 	background.setPosition(720.f, 450.f);
-	background.setScale(4.f, 4.f);
-	backgroundTexture.loadFromFile("Texture/Background.png");
-	background.setTexture(backgroundTexture);
+	backgroundTexture.loadFromFile("Texture/Map/Background.png");
+	background.setTexture(&backgroundTexture);
 
 	spawnTimerMax = 10.f;
 
@@ -16,9 +16,8 @@ Game::Game(sf::RenderWindow* window, sf::View view)
 	enemyHp.setCharacterSize(16);
 	enemyHp.setFillColor(sf::Color::White);
 
-	maxPlayerHp = 20.f;
+	maxPlayerHp = 100.f;
 	currentPlayerHp = maxPlayerHp;
-
 
 	duringWave = false;
 
@@ -38,7 +37,7 @@ void Game::pollEvent()
 void Game::screenUIupdate()
 {
 	gui.screenUI(player.getPos(), exp, maxExp, wave, weaponSlot[currentSlot],
-		weaponDamage[currentSlot], playerBaseDamage, currentPlayerHp, maxPlayerHp);
+		weaponDamage[currentSlot], playerBaseDamage, currentPlayerHp, maxPlayerHp, currentSlot);
 }
 
 void Game::takeItemUpdate()
@@ -85,13 +84,19 @@ void Game::attackUpdate()
 		attackCooldown = true;
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
 		{
-			currentPlayerHp -= 5;
 			attackCooldown = false;
 			attackCoolDownClock.restart();
 		}
 		if (!attackCooldown)
 		{
 			enableToAttack = true;
+		}
+		//Suicide debug
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::R))
+		{
+			attackCooldown = false;
+			attackCoolDownClock.restart();
+			currentPlayerHp -= 5;
 		}
 	}
 	else
@@ -103,7 +108,7 @@ void Game::attackUpdate()
 void Game::playerAttackRange()
 {
 	weaponHitbox.setHitbox(player.getPos().x + 8,
-		player.getPos().y + 8, weaponSlot[currentSlot]);
+		player.getPos().y + 8, weaponSlot[currentSlot], player.getPlayerState());
 }
 
 void Game::playerLevelUpdate()
@@ -115,15 +120,14 @@ void Game::playerLevelUpdate()
 	{
 		exp = 0;
 		playerLevel++;
-		maxPlayerHp = 15 + (playerLevel * 5);
+		maxPlayerHp = 95 + (playerLevel * 5);
 		currentPlayerHp = maxPlayerHp;
 	}
-	
+
 
 	if (currentPlayerHp <= 0)
 		gameOver = true;
 
-	
 }
 
 void Game::waveUpdate()
@@ -133,11 +137,15 @@ void Game::waveUpdate()
 	if (spawnTimer >= 2.f && !duringWave)
 	{
 		wave++;
+		if (wave % 5 != 0)
+			spawner = "00000000";
+		else
+			spawner = "00010000";
 		for (size_t i = 0; i < 8; i++)
 		{
-			enemyType = rand() % 2 + 1;
-			enemies.push_back(new Enemy(enemyType, rand() % 600 + 1,
-				rand() % 600 + 1, wave));
+			enemyType = spawner[i];
+			enemies.push_back(new Enemy(enemyType, rand() % 1440 + 1,
+				rand() % 900 + 1, wave));
 			enemyLeft++;
 		}
 		duringWave = true;
@@ -147,42 +155,52 @@ void Game::waveUpdate()
 		duringWave = false;
 		enemySpawningClock.restart();
 	}
-
-	for (size_t i = 0; i < enemies.size(); i++)
-	{
-		enemies[i]->update();
-		enemies[i]->movement(player.getPos());
-	}
 }
 
 void Game::enemyUpdate()
 {
 	for (size_t i = 0; i < enemies.size(); i++)
 	{
-		if (enemies[i]->getBound().intersects(weaponHitbox.getBound()) &&
-			sf::Keyboard::isKeyPressed(sf::Keyboard::Space) &&
-			playerWeapon != NOTHING && enableToAttack)
+		enemies[i]->update();
+		enemies[i]->movement(player.getPos(), weaponHitbox.getPos());
+
+		//do damage to player
+		if (enemies[i]->getHitBoxBound().intersects(player.getBound()))
 		{
-			if (enemies[i]->getHp() > 0)
-			{
+			enemies[i]->doDamage(currentPlayerHp);
+			if(!enemies[i]->enemyAttackCooldown())
+				player.knockBack(enemies[i]->getNormalizedDir());
+		}
+
+		//collision check
+		enemies[i]->checkObstruct(enemies[i]->getBound(), player.getBound());
+		for (size_t j = 0; j < i; j++)
+		{
+			if (i != j)
+				enemies[i]->checkObstruct(enemies[i]->getBound(), enemies[j]->getBound());
+		}
+	}
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) &&
+		playerWeapon != NOTHING && enableToAttack)
+	{
+		for (size_t i = 0; i < enemies.size(); i++)
+		{
+			if (enemies[i]->getHp() > 0 && enemies[i]->getBound().intersects(weaponHitbox.getBound()))
 				enemies[i]->takeDamage(weaponDamage[currentSlot] + playerBaseDamage);
-			}
 			if (enemies[i]->getHp() <= 0)
 			{
 				exp += enemies[i]->getEXP();
-				if (rand() % 10 + 1 == 2)
-					drop.push_back(new ItemDrop(enemyType, wave, enemies[i]->getPos()));
+				if(enemies[i]->getType() == 1)
+					drop.push_back(new ItemDrop(enemies[i]->getType(), wave, enemies[i]->getPos()));
+				else if (enemies[i]->getType() != 1 && rand() % 10 + 1 == 2)
+					drop.push_back(new ItemDrop(enemies[i]->getType(), wave, enemies[i]->getPos()));
 				enemies.erase(enemies.begin() + i);
 				killCount++;
 				enemyLeft--;
 			}
 		}
-		/*for (size_t j = 0; j < i; j++)
-		{
-			if(i != j && enemies[i] != nullptr && enemies[j] != nullptr)
-				enemies[i]->checkObstruct(enemies[i]->getBound(), enemies[j]->getBound());
-		}*/
 	}
+
 }
 
 void Game::update()
@@ -246,18 +264,18 @@ void Game::gameReset()
 	currentSlot = 0;
 	weaponSlot[0] = 1;
 	weaponSlot[1] = 0;
-	weaponDamage[0] = 2;
+	weaponDamage[0] = 900;
 	weaponDamage[1] = 0;
 
 	playerLevel = 1;
-	maxPlayerHp = 20.f;
+	maxPlayerHp = 100.f;
 	currentPlayerHp = maxPlayerHp;
 	exp = 0;
 
 	playerWeapon = DAGGER;
 
 	wave = 0;
-	enemyLeft;
+	enemyLeft = 0;
 	killCount = 0;
 	spawnCount = 0;
 
