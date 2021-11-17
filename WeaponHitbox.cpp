@@ -7,7 +7,7 @@ WeaponHitbox::WeaponHitbox()
 	Hitbox.setOutlineColor(sf::Color::Green);
 }
 
-void WeaponHitbox::setHitbox(float posX, float posY, int type, int state)
+void WeaponHitbox::setHitbox(float posX, float posY, int type, int state, bool isMoving)
 {
 	if (type == 0)
 	{
@@ -25,25 +25,25 @@ void WeaponHitbox::setHitbox(float posX, float posY, int type, int state)
 		width = 175.f;
 	}
 
-	if (state == 1)
+	if (state == 0)
 	{
 		Hitbox.setSize({ range,width });
 		Hitbox.setOrigin({ Hitbox.getLocalBounds().width / 2 , Hitbox.getLocalBounds().height /2 });
 		Hitbox.setPosition(posX - 8 - 75, posY - 8);
 	}
-	if (state == 2)
+	else if (state == 1)
 	{
 		Hitbox.setSize({ range,width });
 		Hitbox.setOrigin({ Hitbox.getLocalBounds().width / 2 , Hitbox.getLocalBounds().height / 2 });
 		Hitbox.setPosition(posX - 8 + 75, posY - 8);
 	}
-	if (state == 3)
+	else if (state == 2)
 	{
 		Hitbox.setSize({ width, range });
 		Hitbox.setOrigin({ Hitbox.getLocalBounds().width / 2 , Hitbox.getLocalBounds().height / 2 });
 		Hitbox.setPosition(posX - 8, posY - 8 - 75);
 	}
-	if (state == 4)
+	else if (state == 3)
 	{
 		Hitbox.setSize({ width, range });
 		Hitbox.setOrigin({ Hitbox.getLocalBounds().width / 2 , Hitbox.getLocalBounds().height / 2 });

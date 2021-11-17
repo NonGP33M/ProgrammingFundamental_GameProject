@@ -5,7 +5,7 @@
 #include "GUI.h"
 #include "ItemDrop.h"
 
-enum playerWeapon { NOTHING, DAGGER, SWORD, AXE, BOW };
+enum playerWeapon { NOTHING, SWORD, HAMMER };
 
 class Game
 {
@@ -44,7 +44,7 @@ private:
 	int maxPlayerHp;
 	int exp = 0;
 	int maxExp;
-	int playerWeapon = DAGGER;
+	int playerWeapon = SWORD;
 
 	std::string spawner;
 	char enemyType;

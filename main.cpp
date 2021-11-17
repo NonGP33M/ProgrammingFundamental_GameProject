@@ -4,8 +4,9 @@
 int main()
 {
 	srand(time(NULL));
-	sf::RenderWindow window(sf::VideoMode(1440, 900), "Game", sf::Style::Close);
-	sf::View view(sf::Vector2f(0.0f, 0.0f), sf::Vector2f(1440, 900));;
+	sf::Vector2f ScreenSize = { 1440.f,900.f };
+	sf::RenderWindow window(sf::VideoMode(ScreenSize.x, ScreenSize.y), "Game", sf::Style::Close);
+	sf::View view(sf::Vector2f(0.0f, 0.0f), ScreenSize);
 	sf::Event event;
 	window.setFramerateLimit(144.f);
 
@@ -64,7 +65,7 @@ int main()
 			{
 				menu.leaderBoardMenuUpdate();
 				menu.leaderBoardMenuRender();
-				
+
 			}
 			if (state == GAMEOVER)
 			{

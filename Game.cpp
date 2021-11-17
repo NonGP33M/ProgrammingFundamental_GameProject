@@ -5,7 +5,7 @@ Game::Game(sf::RenderWindow* window, sf::View view)
 	background.setSize({ 2048.f, 2048.f });
 	background.setOrigin(background.getSize().x / 2, background.getSize().y / 2);
 	background.setPosition(720.f, 450.f);
-	backgroundTexture.loadFromFile("Texture/Map/Background.png");
+	backgroundTexture.loadFromFile("Texture/Sprite/Map/Background.png");
 	background.setTexture(&backgroundTexture);
 
 	spawnTimerMax = 10.f;
@@ -44,24 +44,26 @@ void Game::takeItemUpdate()
 {
 	for (size_t i = 0; i < drop.size(); i++)
 	{
+		if (drop[i]->getTime() >= 15)
+			drop.erase(drop.begin() + i);
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::E)
 			&& drop[i]->getBound().intersects(player.getBound()))
 		{
 			if (weaponSlot[0] == 0)
 			{
-				weaponSlot[0] = drop[i]->getType();
+				weaponSlot[0] = drop[i]->getWeaponType();
 				currentSlot = 0;
 				weaponDamage[0] = drop[i]->getDamage();
 			}
 			else if (weaponSlot[1] == 0)
 			{
-				weaponSlot[1] = drop[i]->getType();
+				weaponSlot[1] = drop[i]->getWeaponType();
 				currentSlot = 1;
 				weaponDamage[1] = drop[i]->getDamage();
 			}
 			else
 			{
-				weaponSlot[currentSlot] = drop[i]->getType();
+				weaponSlot[currentSlot] = drop[i]->getWeaponType();
 				weaponDamage[currentSlot] = drop[i]->getDamage();
 			}
 			drop.erase(drop.begin() + i);
@@ -73,10 +75,10 @@ void Game::attackUpdate()
 {
 	attackTimer = attackCoolDownClock.getElapsedTime().asSeconds();
 	enableToAttack = false;
-	if (playerWeapon == DAGGER)
-		attackTimerMax = 0.5f;
 	if (playerWeapon == SWORD)
 		attackTimerMax = 1.f;
+	if (playerWeapon == HAMMER)
+		attackTimerMax = 1.5f;
 
 	if (attackTimer >= attackTimerMax)
 	{
@@ -108,7 +110,8 @@ void Game::attackUpdate()
 void Game::playerAttackRange()
 {
 	weaponHitbox.setHitbox(player.getPos().x + 8,
-		player.getPos().y + 8, weaponSlot[currentSlot], player.getPlayerState());
+		player.getPos().y + 8, weaponSlot[currentSlot],
+		player.getPlayerState(), player.movingCheck());
 }
 
 void Game::playerLevelUpdate()
@@ -134,13 +137,13 @@ void Game::waveUpdate()
 {
 	spawnTimer = enemySpawningClock.getElapsedTime().asSeconds();
 
-	if (spawnTimer >= 2.f && !duringWave)
+	if (spawnTimer >= 5.f && !duringWave)
 	{
 		wave++;
 		if (wave % 5 != 0)
-			spawner = "00000000";
+			spawner = "01010101";
 		else
-			spawner = "00010000";
+			spawner = "01010102";
 		for (size_t i = 0; i < 8; i++)
 		{
 			enemyType = spawner[i];
@@ -167,9 +170,11 @@ void Game::enemyUpdate()
 		//do damage to player
 		if (enemies[i]->getHitBoxBound().intersects(player.getBound()))
 		{
-			enemies[i]->doDamage(currentPlayerHp);
-			if(!enemies[i]->enemyAttackCooldown())
+			if (!enemies[i]->enemyAttackCooldown())
+			{
+				enemies[i]->doDamage(currentPlayerHp);
 				player.knockBack(enemies[i]->getNormalizedDir());
+			}
 		}
 
 		//collision check
@@ -186,14 +191,14 @@ void Game::enemyUpdate()
 		for (size_t i = 0; i < enemies.size(); i++)
 		{
 			if (enemies[i]->getHp() > 0 && enemies[i]->getBound().intersects(weaponHitbox.getBound()))
-				enemies[i]->takeDamage(weaponDamage[currentSlot] + playerBaseDamage);
+				enemies[i]->takeDamage(weaponDamage[currentSlot] + playerBaseDamage, weaponSlot[currentSlot]);
 			if (enemies[i]->getHp() <= 0)
 			{
 				exp += enemies[i]->getEXP();
-				if(enemies[i]->getType() == 1)
-					drop.push_back(new ItemDrop(enemies[i]->getType(), wave, enemies[i]->getPos()));
-				else if (enemies[i]->getType() != 1 && rand() % 10 + 1 == 2)
-					drop.push_back(new ItemDrop(enemies[i]->getType(), wave, enemies[i]->getPos()));
+				if(enemies[i]->bossCheck())
+					drop.push_back(new ItemDrop(wave, enemies[i]->getPos()));
+				else if (rand() % 10 < 1)
+					drop.push_back(new ItemDrop(wave, enemies[i]->getPos()));
 				enemies.erase(enemies.begin() + i);
 				killCount++;
 				enemyLeft--;
@@ -208,13 +213,13 @@ void Game::update()
 	player.update();
 
 	pollEvent();
-	screenUIupdate();
 	takeItemUpdate();
 	playerAttackRange();
 	playerLevelUpdate();
 	attackUpdate();
 	waveUpdate();
 	enemyUpdate();
+	screenUIupdate();
 
 	playerWeapon = weaponSlot[currentSlot];
 
@@ -258,6 +263,7 @@ void Game::gameReset()
 {
 	player.reset();
 	enemySpawningClock.restart();
+	player.animationReset();
 	spawnTimer = 0;
 	spawnTimerMax = 100.f;
 
@@ -272,7 +278,7 @@ void Game::gameReset()
 	currentPlayerHp = maxPlayerHp;
 	exp = 0;
 
-	playerWeapon = DAGGER;
+	playerWeapon = SWORD;
 
 	wave = 0;
 	enemyLeft = 0;

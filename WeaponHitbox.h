@@ -13,7 +13,7 @@ public:
 	inline const sf::Vector2f getPos() { return Hitbox.getPosition(); }
 	inline const sf::FloatRect getBound() { return Hitbox.getGlobalBounds(); }
 	inline const float knifeDamage(float level) { return 2 + level; }
-	void setHitbox(float posX, float posY, int type, int state);
+	void setHitbox(float posX, float posY, int type, int state, bool isMoving);
 	void render(sf::RenderTarget& other);
 };
 

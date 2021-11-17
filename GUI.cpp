@@ -5,10 +5,8 @@ GUI::GUI()
 	font.loadFromFile("Font/Retro Gaming.ttf");
 
 	exp.setFont(font);
-	exp.setFillColor(sf::Color::White);
-	exp.setCharacterSize(24);
-	exp.setOutlineThickness(1.f);
-	exp.setOutlineColor(sf::Color::Black);
+	exp.setFillColor(sf::Color::Black);
+	exp.setCharacterSize(16);
 
 	wave.setFont(font);
 	wave.setFillColor(sf::Color::White);
@@ -30,16 +28,15 @@ GUI::GUI()
 	weapon.setOutlineColor(sf::Color::Black);
 
 	currentPlayerHp.setFont(font);
-	currentPlayerHp.setFillColor(sf::Color::White);
-	currentPlayerHp.setCharacterSize(24);
-	currentPlayerHp.setLineSpacing(2);
-	currentPlayerHp.setOutlineThickness(1.f);
-	currentPlayerHp.setOutlineColor(sf::Color::Black);
+	currentPlayerHp.setFillColor(sf::Color::Black);
+	currentPlayerHp.setCharacterSize(16);
 
-	maxHpBar.setSize({ 400.f,40.f });
-	maxHpBar.setFillColor(sf::Color(90.f, 90.f, 90.f, 255.f));
+	maxHpBar.setSize({ 259.f,22.f });
+
+	maxEXPBar.setSize({ 259.f,5.f });
 
 	currentHpBar.setFillColor(sf::Color(255.f, 40.f, 80.f, 255.f));
+	expBar.setFillColor(sf::Color(0.f, 255.f, 155.f, 255.f));
 
 	weaponSlot.setFont(font);
 	weaponSlot.setFillColor(sf::Color::White);
@@ -52,6 +49,11 @@ GUI::GUI()
 	weaponSlot_1.setCharacterSize(24);
 	weaponSlot_1.setOutlineThickness(1.f);
 	weaponSlot_1.setOutlineColor(sf::Color::Black);
+
+	UIHUD.setSize({ 1440.f,900.f });
+	UIHUD.setOrigin(UIHUD.getLocalBounds().width / 2, UIHUD.getLocalBounds().height / 2);
+	HUDTexture.loadFromFile("Texture/Sprite/UI.png");
+	UIHUD.setTexture(&HUDTexture);
 }
 
 void GUI::enemyUI(int currentHp, int maxHp, sf::Vector2f pos, sf::Vector2f size, sf::RenderTarget& other)
@@ -61,28 +63,37 @@ void GUI::enemyUI(int currentHp, int maxHp, sf::Vector2f pos, sf::Vector2f size,
 	other.draw(enemyHp);
 }
 
-void GUI::screenUI(sf::Vector2f pos, int currentEXP, int maxEXP, int wave, int currentWeapon, int weaponDamage, int baseDamage, int currentPlayerHp, float maxPlayerHp, int slot)
+void GUI::screenUI(sf::Vector2f pos, float currentEXP, float maxEXP, int wave, 
+	int currentWeapon, int weaponDamage, int baseDamage, float currentPlayerHp, 
+	float maxPlayerHp, int slot)
 {
-	exp.setString("EXP:" + std::to_string(currentEXP) + "/" + std::to_string(maxEXP));
-	exp.setPosition(pos.x - 700, pos.y - 380);
+	UIHUD.setPosition(pos.x, pos.y);
+	exp.setString("EXP:" + std::to_string(static_cast<int>(currentEXP)) + "/" + std::to_string(static_cast<int>(maxEXP)));
+	exp.setPosition(pos.x - 690, pos.y - 386);
 
 	this->wave.setString("Waves : " + std::to_string(wave));
 	this->wave.setPosition(pos.x + 550, pos.y - 430);
 
-	maxHpBar.setPosition(pos.x - 700, pos.y - 430);
+	maxHpBar.setPosition(pos.x - 563, pos.y - 416);
 
-	currentHpBar.setPosition(pos.x - 700, pos.y - 430);
-	currentHpBar.setSize({ 400.f * (currentPlayerHp / maxPlayerHp),40.f });
+	currentHpBar.setPosition(maxHpBar.getPosition());
+	currentHpBar.setSize({ maxHpBar.getLocalBounds().width * (currentPlayerHp / maxPlayerHp), maxHpBar.getLocalBounds().height });
 
-	this->currentPlayerHp.setString("HP : " + std::to_string(currentPlayerHp));
-	this->currentPlayerHp.setPosition(pos.x - 680, pos.y - 425);
+	maxEXPBar.setPosition(pos.x - 563, pos.y - 377);
+
+	expBar.setPosition(maxEXPBar.getPosition());
+	expBar.setSize({ maxEXPBar.getLocalBounds().width * (currentEXP / maxEXP), maxEXPBar.getLocalBounds().height });
+
+	this->currentPlayerHp.setString("HP:" + std::to_string(static_cast<int>(currentPlayerHp)) + 
+		"/" + std::to_string(static_cast<int>(maxPlayerHp)));
+	this->currentPlayerHp.setPosition(pos.x - 690, pos.y - 416);
 
 	if (currentWeapon == 0)
 		weapon.setString("WeaponUsing : Nothing (NO DAMAGE)");
 	else if (currentWeapon == 1)
-		weapon.setString("WeaponUsing : Dagger (" + std::to_string(weaponDamage) + "+" + std::to_string(baseDamage) + ")");
-	else if (currentWeapon == 2)
 		weapon.setString("WeaponUsing : Sword (" + std::to_string(weaponDamage) + "+" + std::to_string(baseDamage) + ")");
+	else if (currentWeapon == 2)
+		weapon.setString("WeaponUsing : Hammer (" + std::to_string(weaponDamage) + "+" + std::to_string(baseDamage) + ")");
 	weapon.setPosition(pos.x - 700, pos.y + 400);
 
 	if (slot == 0)
@@ -120,11 +131,12 @@ void GUI::screenUI(sf::Vector2f pos, int currentEXP, int maxEXP, int wave, int c
 
 void GUI::render(sf::RenderTarget& other)
 { 
+	other.draw(UIHUD);
+	other.draw(currentHpBar);
+	other.draw(expBar);
 	other.draw(exp);
 	other.draw(this->wave);
 	other.draw(weapon);
-	other.draw(maxHpBar);
-	other.draw(currentHpBar);
 	other.draw(currentPlayerHp);
 	other.draw(weaponSlot);
 	other.draw(weaponSlot_1);

@@ -22,6 +22,7 @@ private:
 	float damage;
 	bool enableToAttack;
 	bool cooldown;
+	bool isBoss;
 
 	sf::Vector2f dir;
 	sf::Vector2f normalizedDir;
@@ -36,12 +37,13 @@ public:
 	inline const int getMaxHp() { return MaxHp; }
 	inline const int getEXP() { return exp; }
 	inline const int getType() { return this->type; }
+	inline const bool bossCheck() { return isBoss; }
 	inline const sf::Vector2f getSize() { return size; }
 	inline const sf::Vector2f getNormalizedDir() { return normalizedDir; }
 	inline const bool enemyAttackCooldown() { return cooldown; }
 	void attackCooldown();
 	void doDamage(int& playerHp);
-	void takeDamage(float damage);
+	void takeDamage(float damage, int weapon);
 	void knockBack();
 	void movement(sf::Vector2f playerPos, sf::Vector2f playerHitBoxPos);
 	void checkObstruct(sf::FloatRect thisPos, sf::FloatRect otherPos);

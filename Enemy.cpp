@@ -2,7 +2,7 @@
 
 Enemy::Enemy(char type, float posX, float posY, float wave)
 {
-	if (type != 49)
+	if (type != 50)
 	{
 		size = { 64.f, 64.f };
 		enemy.setOrigin(32.f, 32.f);
@@ -10,12 +10,24 @@ Enemy::Enemy(char type, float posX, float posY, float wave)
 		enemy.setFillColor(sf::Color::Green);
 
 		enemyHitBox.setSize(size);
+		isBoss = false;
 
-		movementSpeed = 0.4f + 0.1 * wave;
-		MaxHp = 10 * wave;
-		exp = 2.f;
-		damage = MaxHp / 5;
-		this->type = 0;
+		if (type == 48)
+		{
+			movementSpeed = 0.3f + 0.1 * wave;
+			MaxHp = 10 * wave;
+			exp = 2.f;
+			damage = MaxHp / 5;
+			this->type = 0;
+		}
+		else
+		{
+			movementSpeed = 0.5f + 0.1 * wave;
+			MaxHp = 10 * wave;
+			exp = 2.f;
+			damage = MaxHp / 5;
+			this->type = 1;
+		}
 	}
 	else
 	{
@@ -26,11 +38,12 @@ Enemy::Enemy(char type, float posX, float posY, float wave)
 
 		enemyHitBox.setSize(size);
 
-		movementSpeed = 0.2f + 0.1 * wave;
+		movementSpeed = 0.1f + 0.1 * wave;
 		MaxHp = 20 * wave;
-		exp = 5.f;
-		damage = MaxHp / 3;
-		this->type = 1;
+		exp = 20.f;
+		damage = MaxHp / 4;
+		isBoss = true;
+		this->type = rand() % 2;
 	}
 
 	enemy.setPosition(posX, posY);
@@ -49,7 +62,7 @@ void Enemy::movement(sf::Vector2f playerPos, sf::Vector2f playerHitBoxPos)
 	enemy.move(movementSpeed * normalizedDir.x, movementSpeed * normalizedDir.y);
 
 	enemyHitBox.setPosition(nextPos.left, nextPos.top);
-	enemyHitBox.move(movementSpeed * normalizedDir.x * 50, movementSpeed * normalizedDir.y * 50);
+	enemyHitBox.move(movementSpeed * normalizedDir.x * 25, movementSpeed * normalizedDir.y * 25);
 
 	knockbackDir = playerHitBoxPos - enemy.getPosition();
 	normalizedKnockbackDir = knockbackDir / sqrt(knockbackDir.x * knockbackDir.x + knockbackDir.y * knockbackDir.y);
@@ -141,9 +154,24 @@ void Enemy::doDamage(int& playerHp)
 	}
 }
 
-void Enemy::takeDamage(float damage)
+void Enemy::takeDamage(float damage,int weapon)
 {
-	currentHp -= damage;
+	if (type == 0)
+	{
+		if (weapon == 1)
+			currentHp -= damage / 2;
+		else if (weapon == 2)
+			currentHp -= damage;
+	}
+
+	else
+	{
+		if (weapon == 1)
+			currentHp -= damage;
+		else if (weapon == 2)
+			currentHp -= damage / 2;
+	}
+	
 	knockBack();
 }
 
