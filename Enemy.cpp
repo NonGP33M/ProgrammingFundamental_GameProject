@@ -16,7 +16,7 @@ Enemy::Enemy(char type, float posX, float posY, float wave)
 		{
 			movementSpeed = 0.3f + 0.1 * wave;
 			MaxHp = 10 * wave;
-			exp = 2.f;
+			exp = 2.f + wave * 2;
 			damage = MaxHp / 5;
 			this->type = 0;
 		}
@@ -24,7 +24,7 @@ Enemy::Enemy(char type, float posX, float posY, float wave)
 		{
 			movementSpeed = 0.5f + 0.1 * wave;
 			MaxHp = 10 * wave;
-			exp = 2.f;
+			exp = 2.f + wave * 2;
 			damage = MaxHp / 5;
 			this->type = 1;
 		}
@@ -34,13 +34,13 @@ Enemy::Enemy(char type, float posX, float posY, float wave)
 		size = { 128.f, 128.f };
 		enemy.setOrigin(64.f, 64.f);
 		enemy.setSize(size);
-		enemy.setFillColor(sf::Color::Blue);
+		enemy.setFillColor(sf::Color::Red);
 
 		enemyHitBox.setSize(size);
 
 		movementSpeed = 0.1f + 0.1 * wave;
 		MaxHp = 20 * wave;
-		exp = 20.f;
+		exp = 20.f * wave;
 		damage = MaxHp / 4;
 		isBoss = true;
 		this->type = rand() % 2;
@@ -49,21 +49,74 @@ Enemy::Enemy(char type, float posX, float posY, float wave)
 	enemy.setPosition(posX, posY);
 	enemyHitBox.setFillColor(sf::Color::Transparent);
 	enemyHitBox.setOutlineThickness(1.f);
-	enemyHitBox.setOutlineColor(sf::Color::Red);
+	enemyHitBox.setOutlineColor(sf::Color::Blue);
+
+	enemySight.setFillColor(sf::Color::Transparent);
+	enemySight.setOutlineThickness(1.f);
+	enemySight.setOutlineColor(sf::Color::Red);
+	enemySight.setSize({ enemy.getSize().x * 12, enemy.getSize().y * 12 });
+	enemySight.setOrigin(enemySight.getLocalBounds().width / 2,
+		enemySight.getLocalBounds().height / 2);
+
 	currentHp = MaxHp;
 	dir = { 1.f,1.f };
+
+	randomX = randomAngle() / 1000;
+	randomY = randomAngle() / 1000;
+
+	timeBefore = randomTime(3,0);
+	timeAfter = randomTime(4,3);
 }
 
-void Enemy::movement(sf::Vector2f playerPos, sf::Vector2f playerHitBoxPos)
+void Enemy::movement(sf::Vector2f playerPos, sf::Vector2f playerHitBoxPos, sf::FloatRect playerBound)
 {
 	position = enemy.getPosition();
 	dir = playerPos - enemy.getPosition();
 	normalizedDir = dir / sqrt(dir.x * dir.x + dir.y * dir.y);
-	enemy.move(movementSpeed * normalizedDir.x, movementSpeed * normalizedDir.y);
-
 	enemyHitBox.setPosition(nextPos.left, nextPos.top);
-	enemyHitBox.move(movementSpeed * normalizedDir.x * 25, movementSpeed * normalizedDir.y * 25);
+	enemySight.setPosition(position);
 
+	//TAXIS MOVEMENT
+	if (enemySight.getGlobalBounds().intersects(playerBound))
+	{
+		enemy.move(movementSpeed * normalizedDir.x, movementSpeed * normalizedDir.y);
+		enemyHitBox.move(movementSpeed * 2 * normalizedDir.x * 25, movementSpeed * 2 * normalizedDir.y * 25);
+	}
+	//RANDOM MOVEMENT
+	else
+	{
+		randomDir = { randomX, randomY };
+		if (movingClock.getElapsedTime().asSeconds() > timeBefore)
+		{
+			enemy.move(movementSpeed * randomDir.x, movementSpeed * randomDir.y);
+			enemyHitBox.move(movementSpeed * randomDir.x * 25, movementSpeed * randomDir.y * 25);
+			if (movingClock.getElapsedTime().asSeconds() >= timeAfter)
+			{
+				movingClock.restart();
+				randomX = randomAngle() / 1000;
+				randomY = randomAngle() / 1000;
+				timeBefore = randomTime(3, 0);
+				timeAfter = randomTime(4, 3);
+			}
+		}
+	}
+	//MAP COLLISION
+	if (enemy.getPosition().x <= -318 + enemy.getSize().x / 2)
+	{
+		enemy.setPosition(-317 + enemy.getSize().x / 2, enemy.getPosition().y);
+	}
+	if (enemy.getPosition().x >= 1758 - enemy.getSize().x / 2)
+	{
+		enemy.setPosition(1757 - enemy.getSize().x / 2, enemy.getPosition().y);
+	}
+	if (enemy.getPosition().y <= -700 + enemy.getSize().y / 2)
+	{
+		enemy.setPosition(enemy.getPosition().x, -699 + enemy.getSize().y / 2);
+	}
+	if (enemy.getPosition().y >= 1694 - enemy.getSize().y / 2)
+	{
+		enemy.setPosition(enemy.getPosition().x, 1694 - enemy.getSize().y / 2);
+	}
 	knockbackDir = playerHitBoxPos - enemy.getPosition();
 	normalizedKnockbackDir = knockbackDir / sqrt(knockbackDir.x * knockbackDir.x + knockbackDir.y * knockbackDir.y);
 }
@@ -154,24 +207,25 @@ void Enemy::doDamage(int& playerHp)
 	}
 }
 
-void Enemy::takeDamage(float damage,int weapon)
+void Enemy::takeDamage(float damage, int weapon)
 {
+	//EGG
 	if (type == 0)
 	{
 		if (weapon == 1)
 			currentHp -= damage / 2;
 		else if (weapon == 2)
-			currentHp -= damage;
+			currentHp -= damage * 1.5;
 	}
-
+	//CHICKEN
 	else
 	{
 		if (weapon == 1)
 			currentHp -= damage;
 		else if (weapon == 2)
-			currentHp -= damage / 2;
+			currentHp -= damage;
 	}
-	
+
 	knockBack();
 }
 
@@ -184,4 +238,5 @@ void Enemy::render(sf::RenderTarget& other)
 {
 	other.draw(enemy);
 	other.draw(enemyHitBox);
+	other.draw(enemySight);
 }

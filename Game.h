@@ -19,6 +19,7 @@ private:
 	sf::Text enemyHp;
 	sf::Clock attackCoolDownClock;
 	sf::Clock enemySpawningClock;
+	sf::Clock pickingItemClock;
 
 	Player player;
 	std::vector<Enemy*> enemies;
@@ -30,10 +31,8 @@ private:
 	
 	sf::Vector2f playerPos;
 	float playerBaseDamage;
-	float spawnTimer;
-	float spawnTimerMax;
-	float attackTimer;
 	float attackTimerMax;
+	float attackingTimer;
 
 	int currentSlot = 0;
 	int weaponSlot[2];
@@ -67,6 +66,7 @@ public:
 	void screenUIupdate();
 	void takeItemUpdate();
 	void attackUpdate();
+	void playerAttack();
 	void playerAttackRange();
 	void playerLevelUpdate();
 	void waveUpdate();

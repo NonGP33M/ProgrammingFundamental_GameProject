@@ -1,24 +1,50 @@
 #include "ItemDrop.h"
 
-ItemDrop::ItemDrop(int wave, sf::Vector2f enemyPos)
+ItemDrop::ItemDrop(int type, int dmg, bool playerDrop, sf::Vector2f pos)
 {
 	drop.setSize({ 64.f ,64.f });
 	currentFrame = { 0,0,16,16 };
 	drop.setTextureRect(currentFrame);
-	
-	drop.setPosition(enemyPos);
-	weaponType = rand() % 2 + 1;
-	if (weaponType == 1)
+
+	drop.setPosition(pos);
+
+	//ENEMIES DROP
+	if (!playerDrop)
 	{
-		damage = 2 * wave + (rand() % 5);
-		texture.loadFromFile("Texture/Sprite/Sword.png");
-		
+		weaponType = rand() % 2 + 1;
+		if (weaponType == 1)
+		{
+			damage = dmg / (rand() % 4 + 1);
+			texture.loadFromFile("Texture/Sprite/Sword.png");
+
+		}
+		else if (weaponType == 2)
+		{
+			damage = dmg / (rand() % 4 + 1);
+			texture.loadFromFile("Texture/Sprite/Hammer.png");
+		}
 	}
-	else if (weaponType == 2)
+	//PLAYER DROP
+	else
 	{
-		damage = 4 * wave + (rand() % 5);
-		drop.setFillColor(sf::Color::White);
-		texture.loadFromFile("Texture/Sprite/Hammer.png");
+		if (type == 1)
+		{
+			damage = dmg;
+			texture.loadFromFile("Texture/Sprite/Sword.png");
+			weaponType = 1;
+		}
+		else if (type == 2)
+		{
+			damage = dmg;
+			texture.loadFromFile("Texture/Sprite/Hammer.png");
+			weaponType = 2;
+		}
+		else
+		{
+			drop.setSize({ 0, 0 });
+			weaponType = 0;
+			damage = 0;
+		}
 	}
 	drop.setTexture(&texture);
 }
@@ -26,7 +52,7 @@ ItemDrop::ItemDrop(int wave, sf::Vector2f enemyPos)
 void ItemDrop::warning()
 {
 	if (timer.getElapsedTime().asSeconds() > 10 &&
-		static_cast<int>(timer.getElapsedTime().asMilliseconds()) % 500 < 250 )
+		static_cast<int>(timer.getElapsedTime().asMilliseconds()) % 500 < 250)
 	{
 		showing = false;
 	}
@@ -39,48 +65,48 @@ void ItemDrop::warning()
 
 void ItemDrop::animation()
 {
-		if (weaponType == 1)
+	if (weaponType == 1)
+	{
+		if (animClock.getElapsedTime().asSeconds() >= 0.2f)
 		{
-			if (animClock.getElapsedTime().asSeconds() >= 0.2f)
+			currentFrame.left += 16;
+			if (currentFrame.left >= 128)
 			{
-				currentFrame.left += 16;
-				if (currentFrame.left >= 128)
-				{
-					if (currentFrame.top < 48)
-						currentFrame.top += 16;
-					else
-						currentFrame.top = 0;
-					currentFrame.left = 0;
-				}
-
-				drop.setTextureRect(currentFrame);
-				animClock.restart();
+				if (currentFrame.top < 48)
+					currentFrame.top += 16;
+				else
+					currentFrame.top = 0;
+				currentFrame.left = 0;
 			}
+
+			drop.setTextureRect(currentFrame);
+			animClock.restart();
 		}
-		else if (weaponType == 2)
+	}
+	else if (weaponType == 2)
+	{
+		if (animClock.getElapsedTime().asSeconds() >= 0.2f)
 		{
-			if (animClock.getElapsedTime().asSeconds() >= 0.2f)
+			currentFrame.left += 16;
+			if (currentFrame.left >= 128)
 			{
-				currentFrame.left += 16;
-				if (currentFrame.left >= 128)
-				{
-					if (currentFrame.top < 48)
-						currentFrame.top += 16;
-					else
-						currentFrame.top = 0;
-					currentFrame.left = 0;
-				}
-
-				drop.setTextureRect(currentFrame);
-				animClock.restart();
+				if (currentFrame.top < 48)
+					currentFrame.top += 16;
+				else
+					currentFrame.top = 0;
+				currentFrame.left = 0;
 			}
+
+			drop.setTextureRect(currentFrame);
+			animClock.restart();
 		}
+	}
 }
 
 void ItemDrop::render(sf::RenderTarget& other)
 {
 	warning();
 	animation();
-	if(showing)
+	if (showing)
 		other.draw(drop);
 }

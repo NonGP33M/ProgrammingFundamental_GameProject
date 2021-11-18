@@ -9,14 +9,17 @@ class Player
 private:
 	sf::Clock animationTimer;
 	sf::Clock knockbackTimer;
+	sf::Clock attackTimer;
 	sf::RectangleShape playerSprite;
 	sf::RectangleShape playerHitBox;
 	sf::Texture playerTexture;
 	sf::IntRect currentFrame;
 	float movementSpeed = 2.f;
 	int animStates = TOP;
+	int animCount = 0;
 	bool isMoving = false;
 	bool ableToMove = true;
+	bool isAttacking = false;
 
 public:
 	Player();
@@ -25,10 +28,14 @@ public:
 	inline const sf::Vector2u getSize() { return playerTexture.getSize(); }
 	inline const int getPlayerState() { return animStates; }
 	inline const bool movingCheck() { return isMoving; }
+	inline const bool attackingCheck() { return isAttacking; }
 	inline void animationReset() { animStates = TOP; }
+	inline void setMoving(bool set) { ableToMove = set; animCount = 0; }
+	inline void attacking() { isAttacking = true; attackTimer.restart(); }
 	void knockBack(sf::Vector2f knockBackDir);
 	void movement();
 	void animation();
+	void attack();
 	void update();
 	void render(sf::RenderTarget& other);
 	void reset();

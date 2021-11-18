@@ -2,17 +2,22 @@
 #include<SFML/Graphics.hpp>
 #include<iostream>
 
+
 class Enemy
 {
 private:
 	sf::RectangleShape enemy;
 	sf::RectangleShape enemyHitBox;
+	sf::RectangleShape enemySight;
 	sf::FloatRect nextPos;
 	sf::Vector2f position;
 	sf::Vector2f size;
 	sf::Clock attackClock;
+	sf::Clock movingClock;
 
 	int type;
+	float randomX;
+	float randomY;
 	float attackTimer;
 	float timeStamp;
 	float MaxHp;
@@ -20,10 +25,13 @@ private:
 	float exp;
 	float movementSpeed;
 	float damage;
+	float timeAfter;
+	float timeBefore;
 	bool enableToAttack;
 	bool cooldown;
 	bool isBoss;
 
+	sf::Vector2f randomDir;
 	sf::Vector2f dir;
 	sf::Vector2f normalizedDir;
 	sf::Vector2f knockbackDir;
@@ -37,15 +45,18 @@ public:
 	inline const int getMaxHp() { return MaxHp; }
 	inline const int getEXP() { return exp; }
 	inline const int getType() { return this->type; }
+	inline const int getDamage() { return damage; }
 	inline const bool bossCheck() { return isBoss; }
 	inline const sf::Vector2f getSize() { return size; }
 	inline const sf::Vector2f getNormalizedDir() { return normalizedDir; }
 	inline const bool enemyAttackCooldown() { return cooldown; }
+	inline const float randomAngle() { return ((rand()%2001)-1000);}
+	inline const float randomTime(int range, int add) { return rand() % range + add; }
 	void attackCooldown();
 	void doDamage(int& playerHp);
 	void takeDamage(float damage, int weapon);
 	void knockBack();
-	void movement(sf::Vector2f playerPos, sf::Vector2f playerHitBoxPos);
+	void movement(sf::Vector2f playerPos, sf::Vector2f playerHitBoxPos, sf::FloatRect playerBound);
 	void checkObstruct(sf::FloatRect thisPos, sf::FloatRect otherPos);
 	void update();
 	void render(sf::RenderTarget& other);

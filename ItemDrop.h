@@ -15,7 +15,7 @@ private:
 	int damage;
 	bool showing = true;
 public:
-	ItemDrop(int wave, sf::Vector2f enemyPos);
+	ItemDrop(int type, int dmg, bool playerDrop, sf::Vector2f pos);
 	inline const sf::FloatRect getBound() { return drop.getGlobalBounds(); }
 	inline const int getWeaponType() { return weaponType; }
 	inline const int getDamage() { return damage; }
