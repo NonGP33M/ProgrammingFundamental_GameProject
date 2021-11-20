@@ -24,38 +24,51 @@ Game::Game(sf::RenderWindow* window, sf::View view)
 	this->view = view;
 }
 
+void Game::timeTicking(float deltatime)
+{
+	this->deltatime = 0;
+	this->deltatime += deltatime;
+	attackingTimer += deltatime;
+	pickingTime += deltatime;
+	spawningTime += deltatime;
+	if (player.deadCheck())
+		gameOverTime += deltatime;
+	player.timeTicking(deltatime);
+}
+
 void Game::pollEvent()
 {
-	//WEAPON SWITCH
-	if (attackCooldown)
+	if (enableToAttack && !player.knockingBackCheck())
 	{
+		//WEAPON SWITCH
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
 			currentSlot = 0;
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2) &&
 			weaponSlot[1] != 0)
 			currentSlot = 1;
-	}
 
-	//ATTACK
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) &&
-		playerWeapon != NOTHING && enableToAttack &&
-		!player.attackingCheck())
-	{
-		player.setMoving(false);
-		player.attacking();
+		//ATTACK
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) &&
+			playerWeapon != NOTHING &&
+			!player.attackingCheck())
+		{
+			player.setMoving(false);
+			player.attacking();
+		}
 	}
+	
 }
 
 void Game::screenUIupdate()
 {
-	gui.screenUI(player.getPos(), exp, maxExp, wave, weaponSlot[0],weaponSlot[1],
+	gui.screenUI(player.getPos(), exp, maxExp, wave, weaponSlot[0], weaponSlot[1],
 		weaponDamage[currentSlot], playerBaseDamage, currentPlayerHp, maxPlayerHp,
-		currentSlot, spawningTime, duringWave, attackCooldown,score);
+		currentSlot, spawningTime, duringWave, enableToAttack, score,
+		player.knockingBackCheck());
 }
 
 void Game::takeItemUpdate()
 {
-	pickingTime += deltatime;
 	for (size_t i = 0; i < drop.size(); i++)
 	{
 		//ITEM EXPIRING
@@ -91,50 +104,34 @@ void Game::takeItemUpdate()
 					pickingTime = 0;
 				}
 				drop.erase(drop.begin() + i);
-			}	
+			}
 		}
 	}
 }
 
 void Game::attackUpdate()
 {
-	std::cout << attackingTime << std::endl;
-	enableToAttack = false;
-
+	playerWeapon = weaponSlot[currentSlot];
 	if (playerWeapon == SWORD)
 		attackTimerMax = 1.f;
 	if (playerWeapon == HAMMER)
 		attackTimerMax = 1.5f;
 
 	//ATTACK COOLDOWN
-	if (attackingTime >= attackTimerMax)
+	if (attackingTimer >= attackTimerMax)
 	{
-		attackCooldown = true;
-		if (weaponSlot[currentSlot] != 0)
-		{
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
-			{
-				attackCooldown = false;
-				attackingTime = 0;
-			}
-			if (!attackCooldown)
-			{
-				enableToAttack = true;
-			}
-		}
-
-		//SUICIDE DEBUG
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::R))
-		{
-			attackCooldown = false;
-			attackingTime = 0;
-			currentPlayerHp -= 50;
-			drop.push_back(new ItemDrop(weaponSlot[currentSlot],
-				weaponDamage[currentSlot], true, player.getPos()));
-		}
+		enableToAttack = true;
 	}
 	else
-		attackingTime += deltatime;
+	{
+		enableToAttack = false;
+	}
+
+	if (weaponSlot[currentSlot] != 0 &&
+		sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && enableToAttack)
+	{
+		attackingTimer = 0;
+	}
 }
 
 void Game::playerAttackRange()
@@ -152,7 +149,10 @@ void Game::playerAttack()
 		{
 			//IF ENEMIES STILL ALIVE
 			if (enemies[i]->getHp() > 0 && enemies[i]->getBound().intersects(weaponHitbox.getBound()))
+			{
 				enemies[i]->takeDamage(weaponDamage[currentSlot] + playerBaseDamage, weaponSlot[currentSlot]);
+				enemies[i]->knockBack();
+			}
 			//IF ENEMIES DIE
 			if (enemies[i]->getHp() <= 0)
 			{
@@ -164,7 +164,7 @@ void Game::playerAttack()
 
 				//DROP
 				if (enemies[i]->bossCheck() || rand() % 10 < 1)
-					drop.push_back(new ItemDrop(wave, enemies[i]->getMaxHp(), false, enemies[i]->getPos()));
+					drop.push_back(new ItemDrop(wave, enemies[i]->getDamage(), false, enemies[i]->getPos()));
 				enemies.erase(enemies.begin() + i);
 
 				killCount++;
@@ -197,7 +197,6 @@ void Game::playerLevelUpdate()
 	}
 	if (player.deadCheck())
 	{
-		gameOverTime += deltatime;
 		if (gameOverTime >= 3.f)
 		{
 			gameOver = true;
@@ -235,8 +234,6 @@ void Game::waveUpdate()
 
 	if (duringWave)
 		spawningTime = 0;
-	else
-		spawningTime += deltatime;
 
 }
 
@@ -245,6 +242,7 @@ void Game::enemyUpdate()
 	for (size_t i = 0; i < enemies.size(); i++)
 	{
 		//UPDATE
+		enemies[i]->timeTicking(deltatime);
 		enemies[i]->update();
 		enemies[i]->movement(player.getPos(), weaponHitbox.getPos(), player.getBound());
 
@@ -254,7 +252,7 @@ void Game::enemyUpdate()
 			if (!enemies[i]->enemyAttackCooldown() && !player.deadCheck())
 			{
 				enemies[i]->doDamage(currentPlayerHp);
-				player.knockBack(enemies[i]->getNormalizedDir());
+				player.knockback(enemies[i]->getNormalizedDir());
 			}
 		}
 
@@ -290,17 +288,11 @@ void Game::update()
 	waveUpdate();
 	enemyUpdate();
 	screenUIupdate();
-	playerWeapon = weaponSlot[currentSlot];
-	deltatime = gameClock.restart().asSeconds();
 }
 
 void Game::render()
 {
 	window->clear();
-
-	//VIEW
-	view.setCenter(player.getPos());
-	window->setView(view);
 
 	//BACKGROUND
 	window->draw(background);
@@ -328,7 +320,13 @@ void Game::render()
 	//PLAYER
 	player.render(*window);
 
+	//VIEW
+	view.setCenter(player.getPos());
+	window->setView(view);
+
+	//GUI
 	gui.render(*window);
+
 
 	window->display();
 }
@@ -337,13 +335,12 @@ void Game::gameReset()
 {
 	player.reset();
 	gui.reset();
-	gameClock.restart().asSeconds();
 	player.animationReset();
 
 	currentSlot = 0;
 	weaponSlot[0] = 1;
 	weaponSlot[1] = 0;
-	weaponDamage[0] = 900;
+	weaponDamage[0] = 2;
 	weaponDamage[1] = 0;
 
 	playerLevel = 1;
@@ -364,7 +361,7 @@ void Game::gameReset()
 
 	deltatime = 0;
 	pickingTime = 0;
-	attackingTime = 0;
+	attackingTimer = 0;
 	gameOverTime = 0;
 	spawningTime = 0;
 

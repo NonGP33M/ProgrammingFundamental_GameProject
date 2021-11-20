@@ -3,7 +3,7 @@
 Player::Player()
 {
 	playerTexture.loadFromFile("Texture/Player.png");
-	currentFrame = { 0,0,32,32 };
+	currentFrame = { 0,64,32,32 };
 	playerSprite.setTexture(&playerTexture);
 	playerSprite.setSize({ 192.f, 192.f });
 	playerSprite.setPosition(720.f, 450.f);
@@ -19,21 +19,42 @@ Player::Player()
 		playerHitBox.getGlobalBounds().height / 2);
 }
 
-void Player::knockBack(sf::Vector2f knockBackDir)
+void Player::timeTicking(float deltatime)
 {
-	animCount = 0;
-	playerSprite.move(50 * knockBackDir.x, 50 * knockBackDir.y);
-	if (knockbackTimer.getElapsedTime().asSeconds() >= 0.2)
+	animationTimer += deltatime;
+	attackTimer += deltatime;
+}
+
+void Player::knockback(sf::Vector2f knockBackDir)
+{
+	isKnockingBack = true;
+	this->knockBackDir = knockBackDir;
+}
+
+void Player::knockBackUpdate()
+{
+	if (isKnockingBack)
 	{
-		ableToMove = true;
-		knockbackTimer.restart();
+		animCount = 0;
+		isAttacking = false;
+		if (knockBackSpeed > 0)
+		{
+			playerSprite.move(knockBackSpeed * knockBackDir.x, knockBackSpeed * knockBackDir.y);
+			knockBackSpeed -= 0.1f;
+		}
+		else
+		{
+			knockBackSpeed = 5;
+			ableToMove = true;
+			isKnockingBack = false;
+		}
 	}
 }
 
 void Player::movement()
 {
 	//MOVING AND ANIMATION STATE
-	if (ableToMove && !isAttacking && !dead)
+	if (ableToMove && !isAttacking && !dead && !isKnockingBack)
 	{
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
 		{
@@ -89,173 +110,175 @@ void Player::movement()
 
 void Player::animation()
 {
-	//MOVING
-	if (ableToMove && !dead)
+	if (!isKnockingBack)
 	{
-		if (animStates == DOWN)
+		//MOVING
+		if (ableToMove && !dead)
 		{
-			currentFrame.top = 0;
-			if (animationTimer.getElapsedTime().asSeconds() >= 0.1f)
+			if (animStates == DOWN)
 			{
-				if (isMoving)
+				currentFrame.top = 0;
+				if (animationTimer >= 0.1f)
+				{
+					if (isMoving)
+						currentFrame.left += 32;
+					if (currentFrame.left >= 192 || !isMoving)
+						currentFrame.left = 0;
+					playerSprite.setTextureRect(currentFrame);
+					animationTimer = 0;
+				}
+			}
+			else if (animStates == RIGHT)
+			{
+				currentFrame.top = 32;
+				if (animationTimer >= 0.1f)
+				{
 					currentFrame.left += 32;
-				if (currentFrame.left >= 192 || !isMoving)
-					currentFrame.left = 0;
-				playerSprite.setTextureRect(currentFrame);
-				animationTimer.restart();
-			}
-		}
-		else if (animStates == RIGHT)
-		{
-			currentFrame.top = 32;
-			if (animationTimer.getElapsedTime().asSeconds() >= 0.1f)
-			{
-				currentFrame.left += 32;
-				if (currentFrame.left >= 192 || !isMoving)
-					currentFrame.left = 0;
-				playerSprite.setTextureRect(currentFrame);
-				animationTimer.restart();
-			}
-		}
-		else if (animStates == TOP)
-		{
-			currentFrame.top = 64;
-			if (animationTimer.getElapsedTime().asSeconds() >= 0.1f)
-			{
-				currentFrame.left += 32;
-				if (currentFrame.left >= 192 || !isMoving)
-					currentFrame.left = 0;
-				playerSprite.setTextureRect(currentFrame);
-				animationTimer.restart();
-			}
-		}
-		else if (animStates == LEFT)
-		{
-			currentFrame.top = 96;
-			if (animationTimer.getElapsedTime().asSeconds() >= 0.1f)
-			{
-				currentFrame.left += 32;
-				if (currentFrame.left >= 192 || !isMoving)
-					currentFrame.left = 0;
-				playerSprite.setTextureRect(currentFrame);
-				animationTimer.restart();
-			}
-		}
-	}
-	//ATTACKING
-	else if (isAttacking && !dead)
-	{
-		if (animStates == DOWN && isAttacking)
-		{
-			currentFrame.top = 128;
-			if (animationTimer.getElapsedTime().asSeconds() >= 0.05f)
-			{
-				if (animCount != 6)
-					currentFrame.left = 32 * animCount;
-				if (animCount >= 6)
-				{
-					animCount = 0;
+					if (currentFrame.left >= 192 || !isMoving)
+						currentFrame.left = 0;
+					playerSprite.setTextureRect(currentFrame);
+					animationTimer = 0;
 				}
-				else
-					animCount++;
-				playerSprite.setTextureRect(currentFrame);
-				animationTimer.restart();
 			}
-		}
-		else if (animStates == RIGHT && isAttacking)
-		{
-			currentFrame.top = 160;
-			if (animationTimer.getElapsedTime().asSeconds() >= 0.05f)
+			else if (animStates == TOP)
 			{
-				if (animCount != 6)
-					currentFrame.left = 32 * animCount;
-				if (animCount >= 6)
+				currentFrame.top = 64;
+				if (animationTimer >= 0.1f)
 				{
-					animCount = 0;
+					currentFrame.left += 32;
+					if (currentFrame.left >= 192 || !isMoving)
+						currentFrame.left = 0;
+					playerSprite.setTextureRect(currentFrame);
+					animationTimer = 0;
 				}
-				else
-					animCount++;
-				playerSprite.setTextureRect(currentFrame);
-				animationTimer.restart();
 			}
-		}
-		else if (animStates == TOP && isAttacking)
-		{
-			currentFrame.top = 192;
-			if (animationTimer.getElapsedTime().asSeconds() >= 0.05f)
+			else if (animStates == LEFT)
 			{
-				if (animCount != 6)
-					currentFrame.left = 32 * animCount;
-				if (animCount >= 6)
+				currentFrame.top = 96;
+				if (animationTimer >= 0.1f)
 				{
-					animCount = 0;
+					currentFrame.left += 32;
+					if (currentFrame.left >= 192 || !isMoving)
+						currentFrame.left = 0;
+					playerSprite.setTextureRect(currentFrame);
+					animationTimer = 0;
 				}
-				else
-					animCount++;
-				playerSprite.setTextureRect(currentFrame);
-				animationTimer.restart();
-				animationTimer.restart();
 			}
 		}
-		else if (animStates == LEFT && isAttacking)
+		//ATTACKING
+		else if (isAttacking && !dead)
 		{
-			currentFrame.top = 224;
-			if (animationTimer.getElapsedTime().asSeconds() >= 0.05f)
+			if (animStates == DOWN && isAttacking)
 			{
-				if (animCount != 6)
-					currentFrame.left = 32 * animCount;
-				if (animCount >= 6)
+				currentFrame.top = 128;
+				if (animationTimer >= 0.05f)
 				{
-					animCount = 0;
+					if (animCount != 6)
+						currentFrame.left = 32 * animCount;
+					if (animCount >= 6)
+					{
+						animCount = 0;
+					}
+					else
+						animCount++;
+					playerSprite.setTextureRect(currentFrame);
+					animationTimer = 0;
 				}
-				else
-					animCount++;
-				playerSprite.setTextureRect(currentFrame);
-				animationTimer.restart();
+			}
+			else if (animStates == RIGHT && isAttacking)
+			{
+				currentFrame.top = 160;
+				if (animationTimer >= 0.05f)
+				{
+					if (animCount != 6)
+						currentFrame.left = 32 * animCount;
+					if (animCount >= 6)
+					{
+						animCount = 0;
+					}
+					else
+						animCount++;
+					playerSprite.setTextureRect(currentFrame);
+					animationTimer = 0;
+				}
+			}
+			else if (animStates == TOP && isAttacking)
+			{
+				currentFrame.top = 192;
+				if (animationTimer >= 0.05f)
+				{
+					if (animCount != 6)
+						currentFrame.left = 32 * animCount;
+					if (animCount >= 6)
+					{
+						animCount = 0;
+					}
+					else
+						animCount++;
+					playerSprite.setTextureRect(currentFrame);
+					animationTimer = 0;
+				}
+			}
+			else if (animStates == LEFT && isAttacking)
+			{
+				currentFrame.top = 224;
+				if (animationTimer >= 0.05f)
+				{
+					if (animCount != 6)
+						currentFrame.left = 32 * animCount;
+					if (animCount >= 6)
+					{
+						animCount = 0;
+					}
+					else
+						animCount++;
+					playerSprite.setTextureRect(currentFrame);
+					animationTimer = 0;
+				}
 			}
 		}
-	}
-	//DEAD
-	else
-	{
-		if (animStates == DOWN)
+		//DEAD
+		else
 		{
-			currentFrame.top = 384;
-			if (animationTimer.getElapsedTime().asSeconds() >= 0.15f)
+			if (animStates == DOWN)
 			{
-				currentFrame.left += 32;
-				playerSprite.setTextureRect(currentFrame);
-				animationTimer.restart();
+				currentFrame.top = 384;
+				if (animationTimer >= 0.15f)
+				{
+					currentFrame.left += 32;
+					playerSprite.setTextureRect(currentFrame);
+					animationTimer = 0;
+				}
 			}
-		}
-		if (animStates == RIGHT)
-		{
-			currentFrame.top = 416;
-			if (animationTimer.getElapsedTime().asSeconds() >= 0.15f)
+			if (animStates == RIGHT)
 			{
-				currentFrame.left += 32;
-				playerSprite.setTextureRect(currentFrame);
-				animationTimer.restart();
+				currentFrame.top = 416;
+				if (animationTimer >= 0.15f)
+				{
+					currentFrame.left += 32;
+					playerSprite.setTextureRect(currentFrame);
+					animationTimer = 0;
+				}
 			}
-		}
-		else if (animStates == TOP)
-		{
-			currentFrame.top = 448;
-			if (animationTimer.getElapsedTime().asSeconds() >= 0.15f)
+			else if (animStates == TOP)
 			{
-				currentFrame.left += 32;
-				playerSprite.setTextureRect(currentFrame);
-				animationTimer.restart();
+				currentFrame.top = 448;
+				if (animationTimer >= 0.15f)
+				{
+					currentFrame.left += 32;
+					playerSprite.setTextureRect(currentFrame);
+					animationTimer = 0;
+				}
 			}
-		}
-		else if (animStates == LEFT)
-		{
-			currentFrame.top = 480;
-			if (animationTimer.getElapsedTime().asSeconds() >= 0.15f)
+			else if (animStates == LEFT)
 			{
-				currentFrame.left += 32;
-				playerSprite.setTextureRect(currentFrame);
-				animationTimer.restart();
+				currentFrame.top = 480;
+				if (animationTimer >= 0.15f)
+				{
+					currentFrame.left += 32;
+					playerSprite.setTextureRect(currentFrame);
+					animationTimer = 0;
+				}
 			}
 		}
 	}
@@ -263,7 +286,7 @@ void Player::animation()
 
 void Player::attack()
 {
-	if (attackTimer.getElapsedTime().asSeconds() >= 0.35f)
+	if (attackTimer >= 0.35f)
 	{
 		isAttacking = false;
 		ableToMove = true;
@@ -275,6 +298,7 @@ void Player::update()
 	attack();
 	movement();
 	animation();
+	knockBackUpdate();
 }
 
 void Player::render(sf::RenderTarget& other)
@@ -292,4 +316,9 @@ void Player::reset()
 	isMoving = false;
 	ableToMove = true;
 	isAttacking = false;
+	isKnockingBack = false;
+
+	knockBackSpeed = 5;
+	animationTimer = 0;
+	attackTimer = 0;
 }

@@ -42,7 +42,8 @@ public:
 	void enemyUI(int currentHp, int maxHp, sf::Vector2f pos, sf::Vector2f size, sf::RenderTarget& other);
 	void screenUI(sf::Vector2f pos, float currentEXP, float maxEXP, int wave, 
 		int weapon_1, int weapon_2, int weaponDamage, int baseDamage, float currentPlayerHp,
-		float maxPlayerHp, int slot, float waveTime, bool duringWave, bool enableToAttack, int score);
+		float maxPlayerHp, int slot, float waveTime, bool duringWave, bool enableToAttack, int score,
+		bool isKnockingBack);
 	void render(sf::RenderTarget& other);
 	void reset();
 };

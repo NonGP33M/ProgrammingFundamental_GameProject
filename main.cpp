@@ -8,15 +8,16 @@ int main()
 	sf::RenderWindow window(sf::VideoMode(ScreenSize.x, ScreenSize.y), "Game", sf::Style::Close);
 	sf::View view(sf::Vector2f(0.0f, 0.0f), ScreenSize);
 	sf::Event event;
+	sf::Clock clock;
 	window.setFramerateLimit(144.f);
 
 	Game game(&window, view);
 	Menu menu(&window, view);
-	Player player;
 
 	bool onScreen = true;
 	while (window.isOpen())
 	{
+		float deltatime = clock.restart().asSeconds();
 		int state = menu.getStates();
 		while (window.pollEvent(event))
 		{
@@ -40,12 +41,14 @@ int main()
 		{
 			if (state == MENU)
 			{
+				menu.timeTicking(deltatime);
 				game.gameReset();
 				menu.mainMenuUpdate();
 				menu.mainMenuRender();
 			}
 			if (state == NAME)
 			{
+				menu.timeTicking(deltatime);
 				menu.nameUpdate(event);
 				menu.mainMenuRenderComponent();
 				menu.nameRender();
@@ -59,6 +62,7 @@ int main()
 			{
 				if (!game.gameOverCheck())
 				{
+					game.timeTicking(deltatime);
 					game.update();
 					menu.setScore(game.getScore());
 					menu.pauseCheck();
@@ -71,6 +75,7 @@ int main()
 			}
 			if (state == PAUSE)
 			{
+				menu.timeTicking(deltatime);
 				menu.pauseMenuUpdate();
 				game.pauseRender();
 				menu.pauseMenuRender();
@@ -78,12 +83,14 @@ int main()
 
 			if (state == LEADERBOARD)
 			{
+				menu.timeTicking(deltatime);
 				menu.leaderBoardMenuUpdate();
 				menu.leaderBoardMenuRender();
 
 			}
 			if (state == GAMEOVER)
 			{
+				menu.timeTicking(deltatime);
 				menu.gameOverMenuUpdate();
 				game.pauseRender();
 				menu.gameOverMenuRender();

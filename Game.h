@@ -17,7 +17,6 @@ private:
 	sf::Texture backgroundTexture;
 	sf::Font font;
 	sf::Text enemyHp;
-	sf::Clock gameClock;
 
 	Player player;
 	std::vector<Enemy*> enemies;
@@ -30,7 +29,7 @@ private:
 	sf::Vector2f playerPos;
 	float playerBaseDamage;
 	float attackTimerMax;
-	float attackingTime = 0;
+	float attackingTimer = 0;
 	float deltatime = 0;
 	float pickingTime = 0;
 	float gameOverTime = 0;
@@ -50,8 +49,7 @@ private:
 	std::string spawner;
 	char enemyType;
 
-	bool attackCooldown;
-	bool enableToAttack;
+	bool enableToAttack = true;
 	bool duringWave;
 	bool gameOver = false;
 	
@@ -66,6 +64,7 @@ public:
 	inline const sf::Vector2f getViewPos() { return view.getCenter(); }
 	inline const bool gameOverCheck() { return gameOver; }
 	inline const int getScore() { return score; }
+	void timeTicking(float deltatime);
 	void pollEvent();
 	void screenUIupdate();
 	void takeItemUpdate();

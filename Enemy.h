@@ -12,13 +12,10 @@ private:
 	sf::FloatRect nextPos;
 	sf::Vector2f position;
 	sf::Vector2f size;
-	sf::Clock attackClock;
-	sf::Clock movingClock;
 
 	int type;
 	float randomX;
 	float randomY;
-	float attackTimer;
 	float timeStamp;
 	float MaxHp;
 	float currentHp;
@@ -30,6 +27,12 @@ private:
 	bool enableToAttack;
 	bool cooldown;
 	bool isBoss;
+	bool knockingback = false;
+
+	float attackTimer = 0;
+	float movingTimer = 0;
+
+	float knockbackspeed = 5;
 
 	sf::Vector2f randomDir;
 	sf::Vector2f dir;
@@ -52,10 +55,12 @@ public:
 	inline const bool enemyAttackCooldown() { return cooldown; }
 	inline const float randomAngle() { return ((rand()%2001)-1000);}
 	inline const float randomTime(int range, int add) { return rand() % range + add; }
+	inline void knockBack() { knockingback = true; }
+	void timeTicking(float deltatime);
 	void attackCooldown();
 	void doDamage(int& playerHp);
 	void takeDamage(float damage, int weapon);
-	void knockBack();
+	void knockBackUpdate();
 	void movement(sf::Vector2f playerPos, sf::Vector2f playerHitBoxPos, sf::FloatRect playerBound);
 	void checkObstruct(sf::FloatRect thisPos, sf::FloatRect otherPos);
 	void update();

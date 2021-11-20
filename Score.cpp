@@ -10,24 +10,15 @@ bool Score::sortDes(const std::pair<int, std::string>& a, const std::pair<int, s
     return (a > b);
 }
 
-void Score::setScoreBoard()
+void Score::clearScore()
 {
     for (int i = 0; i < 5; i++)
     {
-        leaderName[i].setFont(font);
-        leaderName[i].setCharacterSize(36);
-        leaderName[i].setString(name[i]);
-        leaderName[i].setFillColor(sf::Color::White);
-
-        leaderScore[i].setFont(font);
-        leaderScore[i].setCharacterSize(36);
-        leaderScore[i].setString(std::to_string(score[i]));
-        leaderScore[i].setFillColor(sf::Color::White);
-        leaderScore[i].setPosition(view.getCenter().x + 300, view.getCenter().y - 100);
+        scorePair.erase(scorePair.begin());
     }
 }
 
-void Score::getName()
+void Score::readFile()
 {
     fp = fopen("./Score/Score.txt", "r");
     for (int i = 0; i < 5; i++)
@@ -36,25 +27,16 @@ void Score::getName()
         name[i] = temp;
         scorePair.push_back(make_pair(score[i], name[i]));
     }
+    std::sort(scorePair.begin(), scorePair.end(), sortDes);
     fclose(fp);
 }
 
 void Score::writeFile(std::string playerName, int playerScore)
 {
-    getName();
-
-    name[5] = playerName;
-    score[5] = playerScore;
-    strcpy(temp, playerName.c_str());
-    scorePair.push_back(make_pair(score[5], name[5]));
-    for (int i = 0; i < 5; i++)
-        std::cout << scorePair[i].second.c_str() << std::endl;
+    readFile();
+    scorePair.push_back(make_pair(playerScore, playerName));
     std::sort(scorePair.begin(), scorePair.end(),sortDes);
-    std::cout << "=====" << std::endl;
-    for (int i = 0; i < 5; i++)
-        std::cout << scorePair[i].second.c_str() << std::endl;
-    fclose(fp);
-    
+
     fp = fopen("./Score/Score.txt", "w");
 
     for (int i = 0; i < 5; i++)
@@ -64,17 +46,4 @@ void Score::writeFile(std::string playerName, int playerScore)
     }
 
     fclose(fp);
-}
-
-void Score::render(sf::RenderTarget& window, sf::View view)
-{
-    getName();
-    setScoreBoard();
-    for (int i = 0; i < 5; i++)
-    {
-        leaderName[i].setPosition(view.getCenter().x - 300, view.getCenter().y - 180 + i * 50);
-        leaderScore[i].setPosition(view.getCenter().x + 200, view.getCenter().y - 180 + i * 50);
-        window.draw(leaderName[i]);
-        window.draw(leaderScore[i]);
-    }
 }

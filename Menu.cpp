@@ -5,7 +5,6 @@ Menu::Menu(sf::RenderWindow* window, sf::View view)
 	font.loadFromFile("Font/Notalot60.ttf");
 
 	buttonTextSize = 30;
-	transitionDebounce = 300;
 
 	greyScreen.setSize({ 1440.f, 900.f });
 	greyScreen.setFillColor(sf::Color(0.f, 0.f, 0.f, 204.f));
@@ -15,7 +14,7 @@ Menu::Menu(sf::RenderWindow* window, sf::View view)
 	//MAIN_MENU
 	title.setFont(font);
 	title.setCharacterSize(128);
-	title.setString("UNTITLED  TITLE");
+	title.setString("UNTITLED TITLE");
 	title.setFillColor(sf::Color::White);
 	title.setOrigin(title.getLocalBounds().width / 2,
 		title.getLocalBounds().height);
@@ -160,18 +159,19 @@ Menu::Menu(sf::RenderWindow* window, sf::View view)
 	name.setCharacterSize(buttonTextSize);
 	name.setFillColor(sf::Color::White);
 
+	cursor.setFont(font);
+	cursor.setCharacterSize(buttonTextSize);
+	cursor.setString("  |");
+
 
 
 	this->window = window;
 	this->view = view;
 }
 
-void Menu::nameReset()
+void Menu::updateScore()
 {
-	if(enteredName != "")
-		score.writeFile(enteredName, playerScore);
-	enteredName = "";
-	playerScore = 0;
+	score.writeFile(enteredName,playerScore);
 }
 
 void Menu::pauseCheck()
@@ -184,16 +184,16 @@ void Menu::mainMenuUpdate()
 {
 	sf::Vector2i gamePos = sf::Mouse::getPosition(*window);
 	sf::Vector2f screenPos = window->mapPixelToCoords(gamePos);
-
 	if (playButton.getGlobalBounds().contains(screenPos))
 	{
 		playButtonText.setCharacterSize(buttonTextSize * 1.5);
 		playButton.setScale(1.2f, 1.2f);
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left) &&
-			debounce.getElapsedTime().asMilliseconds() >= transitionDebounce)
+			transitionDebounce >= 0.3f)
 		{
 			states = NAME;
-			debounce.restart();
+			enteredName = "";
+			transitionDebounce = 0;
 		}
 	}
 	else
@@ -207,10 +207,10 @@ void Menu::mainMenuUpdate()
 		leaderBoardButtonText.setCharacterSize(buttonTextSize * 1.5);
 		leaderBoardButton.setScale(1.2f, 1.2f);
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left) &&
-			debounce.getElapsedTime().asMilliseconds() >= transitionDebounce)
+			transitionDebounce >= 0.3f)
 		{
 			states = LEADERBOARD;
-			debounce.restart();
+			transitionDebounce = 0;
 		}
 	}
 	else
@@ -224,7 +224,7 @@ void Menu::mainMenuUpdate()
 		exitButtonText.setCharacterSize(buttonTextSize * 1.5);
 		exitButton.setScale(1.2f, 1.2f);
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left) &&
-			debounce.getElapsedTime().asMilliseconds() >= transitionDebounce)
+			transitionDebounce >= 0.3f)
 			window->close();
 	}
 	else
@@ -284,10 +284,10 @@ void Menu::leaderBoardMenuUpdate()
 		backButtonText.setCharacterSize(buttonTextSize * 1.5);
 		backButton.setScale(1.2f, 1.2f);
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left) &&
-			debounce.getElapsedTime().asMilliseconds() >= transitionDebounce)
+			transitionDebounce >= 0.3)
 		{
 			states = MENU;
-			debounce.restart();
+			transitionDebounce = 0;
 		}
 	}
 	else
@@ -301,6 +301,22 @@ void Menu::leaderBoardMenuUpdate()
 
 	backButton.setPosition(view.getCenter().x, view.getCenter().y + 200);
 	backButtonText.setPosition(backButton.getPosition());
+
+	score.readFile();
+	for (int i = 0; i < 5; i++)
+	{
+		showingName[i].setFont(font);
+		showingName[i].setCharacterSize(36);
+		showingName[i].setString(score.getName()[i].second);
+
+		showingScore[i].setFont(font);
+		showingScore[i].setCharacterSize(36);
+		showingScore[i].setString(std::to_string(score.getName()[i].first));
+
+		showingName[i].setPosition(view.getCenter().x - 300, view.getCenter().y - 180 + i * 50);
+		showingScore[i].setPosition(view.getCenter().x + 200, view.getCenter().y - 180 + i * 50);
+	}
+	score.clearScore();
 }
 
 void Menu::leaderBoardMenuRender()
@@ -314,7 +330,11 @@ void Menu::leaderBoardMenuRender()
 	window->draw(backButton);
 	window->draw(backButtonText);
 
-	score.render(*window, view);
+	for (int i = 0; i < 5; i++)
+	{
+		window->draw(showingName[i]);
+		window->draw(showingScore[i]);
+	}
 
 	window->display();
 }
@@ -331,10 +351,10 @@ void Menu::pauseMenuUpdate()
 		resumeButtonText.setCharacterSize(buttonTextSize * 1.5);
 		resumeButton.setScale(1.2f, 1.2f);
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left) &&
-			debounce.getElapsedTime().asMilliseconds() >= transitionDebounce)
+			transitionDebounce >= 0.3f)
 		{
 			states = PLAY;
-			debounce.restart();
+			transitionDebounce = 0;
 		}
 	}
 	else
@@ -348,11 +368,12 @@ void Menu::pauseMenuUpdate()
 		mainMenuButtonText.setCharacterSize(buttonTextSize * 1.5);
 		mainMenuButton.setScale(1.2f, 1.2f);
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left) &&
-			debounce.getElapsedTime().asMilliseconds() >= transitionDebounce)
+			transitionDebounce >= 0.3f)
 		{
 			states = MENU;
-			nameReset();
-			debounce.restart();
+			updateScore();
+			score.clearScore();
+			transitionDebounce = 0;
 		}
 	}
 	else
@@ -396,10 +417,12 @@ void Menu::gameOverMenuUpdate()
 		tryAgainButtonText.setCharacterSize(buttonTextSize * 1.5);
 		tryAgainButton.setScale(1.2f, 1.2f);
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left) &&
-			debounce.getElapsedTime().asMilliseconds() >= transitionDebounce)
+			transitionDebounce >= 0.3f)
 		{
 			tryAgainClick = true;
-			debounce.restart();
+			updateScore();
+			score.clearScore();
+			transitionDebounce = 0;
 		}
 	}
 	else
@@ -413,11 +436,12 @@ void Menu::gameOverMenuUpdate()
 		mainMenuButtonText.setCharacterSize(buttonTextSize * 1.5);
 		mainMenuButton.setScale(1.2f, 1.2f);
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left) &&
-			debounce.getElapsedTime().asMilliseconds() >= transitionDebounce)
+			transitionDebounce >= 0.3f)
 		{
 			states = MENU;
-			nameReset();
-			debounce.restart();
+			updateScore();
+			score.clearScore();
+			transitionDebounce = 0;
 		}
 	}
 	else
@@ -464,14 +488,15 @@ void Menu::nameUpdate(sf::Event& event)
 	if (confirmButton.getGlobalBounds().contains(screenPos) && 
 		enteredName != "")
 	{
+		confirmButtonText.setFillColor(sf::Color::White);
 		confirmButtonText.setCharacterSize(buttonTextSize * 1.5);
 		confirmButton.setScale(1.2f, 1.2f);
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left) &&
-			debounce.getElapsedTime().asMilliseconds() >= transitionDebounce)
+			transitionDebounce >= 0.3f)
 		{
 			start = true;
 			states = PLAY;
-			debounce.restart();
+			transitionDebounce = 0;
 		}
 	}
 	else
@@ -490,11 +515,10 @@ void Menu::nameUpdate(sf::Event& event)
 		backButtonText.setCharacterSize(buttonTextSize * 1.5);
 		backButton.setScale(1.2f, 1.2f);
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left) &&
-			debounce.getElapsedTime().asMilliseconds() >= transitionDebounce)
+			transitionDebounce >= 0.3f)
 		{
 			states = MENU;
-			enteredName = "";
-			debounce.restart();
+			transitionDebounce = 0;
 		}
 	}
 	else
@@ -505,33 +529,46 @@ void Menu::nameUpdate(sf::Event& event)
 
 	//NAME TYPING
 
-	if (event.type == sf::Event::KeyReleased)
-		enableToType = true;
 	if (event.type == sf::Event::TextEntered &&
 		!sf::Keyboard::isKeyPressed(sf::Keyboard::Enter) &&
 		event.text.unicode != 32)
 	{
 		if (event.text.unicode == 8 && enteredName.length() > 0 &&
-			enableToType)
+			typingDebounce >= 0.1f)
 		{
 			enteredName.erase(enteredName.length() - 1);
-			enableToType = false;
+			typingDebounce = 0;
 		}
-		else if (event.text.unicode < 128 && enteredName.length() < 15 &&
-			event.text.unicode != 8 && enableToType && (event.text.unicode < 48 ||
-			event.text.unicode > 57))
+		else if (event.text.unicode < 128 && enteredName.length() < 8 &&
+			event.text.unicode != 8 && (event.text.unicode < 48 ||
+			event.text.unicode > 57) && typingDebounce >= 0.2f)
 		{
+			name.setFillColor(sf::Color::White);
 			enteredName += static_cast<char>(event.text.unicode);
-			enableToType = false;
+			typingDebounce = 0;
 		}
 	}
 	if (enteredName == "")
+	{
+		name.setFillColor(sf::Color(128.f, 128.f, 128.f, 255.f));
+		cursor.setFillColor(sf::Color(255, 255, 255, 0));
 		name.setString("ENTER  YOUR  NAME");
-	else if (static_cast<int>(KeyClock.getElapsedTime().asMilliseconds()) % 1500 <= 750 &&
-		enteredName.length() < 15)
-		name.setString(enteredName + "|");
-	else
+	}
+	else if (cursorBlinking < 0.75f &&
+		enteredName.length() < 8)
+	{
 		name.setString(enteredName);
+		cursor.setFillColor(sf::Color(255, 255, 255, 255));
+	}
+	else if (cursorBlinking >= 0.75f &&
+		enteredName.length() < 15)
+	{
+		name.setString(enteredName);
+		cursor.setFillColor(sf::Color(255, 255, 255, 0));
+	}
+	if (cursorBlinking >= 1.5f)
+		cursorBlinking = 0;
+
 
 	backButton.setSize({ 275.f, 75.f });
 	backButton.setOrigin(backButton.getLocalBounds().width / 2,
@@ -547,6 +584,7 @@ void Menu::nameUpdate(sf::Event& event)
 	name.setOrigin(name.getLocalBounds().width / 2,
 		0);
 	name.setPosition(view.getCenter().x, view.getCenter().y - 70);
+	cursor.setPosition(view.getCenter().x + name.getLocalBounds().width/2, view.getCenter().y - 70);
 
 	nameFrame.setPosition(view.getCenter());
 	nameFill.setPosition(view.getCenter().x, view.getCenter().y - 50);
@@ -570,6 +608,7 @@ void Menu::nameRender()
 	window->draw(backButtonText);
 
 	window->draw(name);
+	window->draw(cursor);
 
 	window->display();
 }

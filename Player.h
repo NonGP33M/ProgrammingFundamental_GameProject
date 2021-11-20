@@ -7,13 +7,11 @@ enum animationState {LEFT, RIGHT, TOP, DOWN};
 class Player
 {
 private:
-	sf::Clock animationTimer;
-	sf::Clock knockbackTimer;
-	sf::Clock attackTimer;
 	sf::RectangleShape playerSprite;
 	sf::RectangleShape playerHitBox;
 	sf::Texture playerTexture;
 	sf::IntRect currentFrame;
+	sf::Vector2f knockBackDir;
 	float movementSpeed = 2.f;
 	int animStates = TOP;
 	int animCount = 0;
@@ -21,6 +19,12 @@ private:
 	bool isMoving = false;
 	bool ableToMove = true;
 	bool isAttacking = false;
+
+	bool isKnockingBack = false;
+
+	float knockBackSpeed = 5;
+	float animationTimer = 0;
+	float attackTimer = 0;
 
 public:
 	Player();
@@ -31,11 +35,14 @@ public:
 	inline const bool movingCheck() { return isMoving; }
 	inline const bool attackingCheck() { return isAttacking; }
 	inline const bool deadCheck() { return dead; }
+	inline const bool knockingBackCheck() { return isKnockingBack; }
 	inline void animationReset() { animStates = TOP; }
 	inline void isDead() { dead = true; currentFrame.left = 0; }
 	inline void setMoving(bool set) { ableToMove = set; animCount = 0; }
-	inline void attacking() { isAttacking = true; attackTimer.restart(); }
-	void knockBack(sf::Vector2f knockBackDir);
+	inline void attacking() { isAttacking = true; attackTimer = 0; }
+	void knockback(sf::Vector2f knockBackDir);
+	void timeTicking(float deltatime);
+	void knockBackUpdate();
 	void movement();
 	void animation();
 	void attack();

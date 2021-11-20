@@ -68,6 +68,12 @@ Enemy::Enemy(char type, float posX, float posY, float wave)
 	timeAfter = randomTime(4,3);
 }
 
+void Enemy::timeTicking(float deltatime)
+{
+	attackTimer += deltatime;
+	movingTimer += deltatime;
+}
+
 void Enemy::movement(sf::Vector2f playerPos, sf::Vector2f playerHitBoxPos, sf::FloatRect playerBound)
 {
 	position = enemy.getPosition();
@@ -76,27 +82,30 @@ void Enemy::movement(sf::Vector2f playerPos, sf::Vector2f playerHitBoxPos, sf::F
 	enemyHitBox.setPosition(nextPos.left, nextPos.top);
 	enemySight.setPosition(position);
 
-	//TAXIS MOVEMENT
-	if (enemySight.getGlobalBounds().intersects(playerBound))
+	if (!knockingback)
 	{
-		enemy.move(movementSpeed * 2 * normalizedDir.x, movementSpeed * 2 * normalizedDir.y);
-		enemyHitBox.move(movementSpeed * normalizedDir.x * 25, movementSpeed * normalizedDir.y * 25);
-	}
-	//RANDOM MOVEMENT
-	else
-	{
-		randomDir = { randomX, randomY };
-		if (movingClock.getElapsedTime().asSeconds() > timeBefore)
+		//TAXIS MOVEMENT
+		if (enemySight.getGlobalBounds().intersects(playerBound))
 		{
-			enemy.move(movementSpeed * randomDir.x, movementSpeed * randomDir.y);
-			enemyHitBox.move(movementSpeed * randomDir.x * 25, movementSpeed * randomDir.y * 25);
-			if (movingClock.getElapsedTime().asSeconds() >= timeAfter)
+			enemy.move(movementSpeed * 2 * normalizedDir.x, movementSpeed * 2 * normalizedDir.y);
+			enemyHitBox.move(movementSpeed * normalizedDir.x * 25, movementSpeed * normalizedDir.y * 25);
+		}
+		//RANDOM MOVEMENT
+		else
+		{
+			randomDir = { randomX, randomY };
+			if (movingTimer > timeBefore)
 			{
-				movingClock.restart();
-				randomX = randomAngle() / 1000;
-				randomY = randomAngle() / 1000;
-				timeBefore = randomTime(3, 0);
-				timeAfter = randomTime(4, 3);
+				enemy.move(movementSpeed * randomDir.x, movementSpeed * randomDir.y);
+				enemyHitBox.move(movementSpeed * randomDir.x * 25, movementSpeed * randomDir.y * 25);
+				if (movingTimer >= timeAfter)
+				{
+					movingTimer = 0;
+					randomX = randomAngle() / 1000;
+					randomY = randomAngle() / 1000;
+					timeBefore = randomTime(3, 0);
+					timeAfter = randomTime(4, 3);
+				}
 			}
 		}
 	}
@@ -174,15 +183,8 @@ void Enemy::checkObstruct(sf::FloatRect thisPos, sf::FloatRect otherPos)
 
 }
 
-void Enemy::update()
-{
-	position = getPos();
-	attackCooldown();
-}
-
 void Enemy::attackCooldown()
 {
-	attackTimer = attackClock.getElapsedTime().asSeconds();
 	enableToAttack = false;
 	if (attackTimer >= 2.f)
 	{
@@ -203,35 +205,56 @@ void Enemy::doDamage(int& playerHp)
 	if (enableToAttack)
 	{
 		playerHp -= damage;
-		attackClock.restart();
+		attackTimer = 0;
+		enableToAttack = false;
 	}
 }
 
 void Enemy::takeDamage(float damage, int weapon)
 {
-	//EGG
-	if (type == 0)
+	if (!knockingback)
 	{
-		if (weapon == 1)
-			currentHp -= damage / 2;
-		else if (weapon == 2)
-			currentHp -= damage * 1.5;
+		//EGG
+		if (type == 0)
+		{
+			if (weapon == 1)
+				currentHp -= damage / 2;
+			else if (weapon == 2)
+				currentHp -= damage * 1.5;
+		}
+		//CHICKEN
+		else
+		{
+			if (weapon == 1)
+				currentHp -= damage;
+			else if (weapon == 2)
+				currentHp -= damage;
+		}
 	}
-	//CHICKEN
-	else
-	{
-		if (weapon == 1)
-			currentHp -= damage;
-		else if (weapon == 2)
-			currentHp -= damage;
-	}
-
-	knockBack();
 }
 
-void Enemy::knockBack()
+void Enemy::knockBackUpdate()
 {
-	enemy.move(0.4f * 250.f * -normalizedKnockbackDir.x, 0.4f * 250.f * -normalizedKnockbackDir.y);
+	if (knockingback)
+	{
+		if (knockbackspeed > 0)
+		{
+			enemy.move(knockbackspeed * -normalizedKnockbackDir.x, knockbackspeed * -normalizedKnockbackDir.y);
+			knockbackspeed -= 0.1;
+		}
+		else
+		{
+			knockbackspeed = 5;
+			knockingback = false;
+		}
+	}
+}
+
+void Enemy::update()
+{
+	position = getPos();
+	attackCooldown();
+	knockBackUpdate();
 }
 
 void Enemy::render(sf::RenderTarget& other)

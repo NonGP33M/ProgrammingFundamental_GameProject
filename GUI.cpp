@@ -76,7 +76,8 @@ void GUI::enemyUI(int currentHp, int maxHp, sf::Vector2f pos, sf::Vector2f size,
 
 void GUI::screenUI(sf::Vector2f pos, float currentEXP, float maxEXP, int wave,
 	int weapon_1, int weapon_2, int weaponDamage, int baseDamage, float currentPlayerHp,
-	float maxPlayerHp, int slot, float waveTime, bool duringWave, bool enableToAttack, int score)
+	float maxPlayerHp, int slot, float waveTime, bool duringWave, bool enableToAttack, int score,
+	bool isKnockingBack)
 {
 	//HP & EXP
 	this->currentPlayerHp.setString("HP: " + std::to_string(static_cast<int>(currentPlayerHp)) + "/"
@@ -133,7 +134,7 @@ void GUI::screenUI(sf::Vector2f pos, float currentEXP, float maxEXP, int wave,
 
 		weaponFrame_1.setTextureRect(firstFrame);
 		weaponFrame_2.setTextureRect(secondFrame);
-		if (!enableToAttack)
+		if (!enableToAttack || isKnockingBack)
 		{
 			weaponFrame_1.setFillColor(sf::Color(128.f, 128.f, 128.f, 255.f));
 			weaponFrame_2.setFillColor(sf::Color(128.f, 128.f, 128.f, 255.f));

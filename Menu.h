@@ -13,8 +13,6 @@ private:
 	sf::View view;
 	sf::Font font;
 	sf::Vector2f buttonSize = { 350.f, 80.f };
-	sf::Clock debounce;
-	sf::Clock KeyClock;
 
 	sf::RectangleShape greyScreen;
 
@@ -40,6 +38,8 @@ private:
 	sf::Text backButtonText;
 	sf::RectangleShape frame;
 	sf::RectangleShape backButton;
+	sf::Text showingName[5];
+	sf::Text showingScore[5];
 
 	//GAMEOVER_MENU
 	sf::Text gameOverTitle;
@@ -52,6 +52,7 @@ private:
 	sf::RectangleShape confirmButton;
 	sf::Text confirmButtonText;
 	sf::Text name;
+	sf::Text cursor;
 	
 	std::string enteredName;
 	int buttonTextSize;
@@ -60,6 +61,8 @@ private:
 	bool enableToType = true;
 	bool start = false;
 	float transitionDebounce;
+	float typingDebounce;
+	float cursorBlinking;
 	int states;
 	int playerScore;
 public:
@@ -72,7 +75,9 @@ public:
 	inline void tryAgain() { states = PLAY; }
 	inline void setScore(int score) { playerScore = score; }
 	inline void started() { start = false; }
-	void nameReset();
+	inline void timeTicking(float deltatime) { transitionDebounce += deltatime; 
+	typingDebounce += deltatime; cursorBlinking += deltatime;}
+	void updateScore();
 	void pauseCheck();
 	void mainMenuUpdate();
 	void mainMenuRender();

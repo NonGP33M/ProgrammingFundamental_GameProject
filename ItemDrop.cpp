@@ -14,13 +14,13 @@ ItemDrop::ItemDrop(int type, int dmg, bool playerDrop, sf::Vector2f pos)
 		weaponType = rand() % 2 + 1;
 		if (weaponType == 1)
 		{
-			damage = dmg / (rand() % 4 + 1);
+			damage = dmg + (rand() % 7 + 1);
 			texture.loadFromFile("Texture/Sword.png");
 
 		}
 		else if (weaponType == 2)
 		{
-			damage = dmg / (rand() % 4 + 1);
+			damage = dmg + (rand() % 7 + 1 );
 			texture.loadFromFile("Texture/Hammer.png");
 		}
 	}
