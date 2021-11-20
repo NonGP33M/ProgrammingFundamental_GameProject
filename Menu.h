@@ -58,6 +58,7 @@ private:
 	
 	bool tryAgainClick = false;
 	bool enableToType = true;
+	bool start = false;
 	float transitionDebounce;
 	int states;
 	int playerScore;
@@ -65,10 +66,12 @@ public:
 	Menu(sf::RenderWindow* window, sf::View view);
 	inline int getStates() { return states; }
 	inline bool tryAgainCheck() { return tryAgainClick; }
+	inline bool startCheck() { return start; }
 	inline void tryAgainClickSetToFalse() { tryAgainClick = false; }
 	inline void gameOver() { states = GAMEOVER; }
 	inline void tryAgain() { states = PLAY; }
 	inline void setScore(int score) { playerScore = score; }
+	inline void started() { start = false; }
 	void nameReset();
 	void pauseCheck();
 	void mainMenuUpdate();

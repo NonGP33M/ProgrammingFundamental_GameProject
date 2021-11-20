@@ -40,7 +40,7 @@ private:
 	int weaponSlot[2];
 	int weaponDamage[2];
 
-	int playerLevel = 1;
+	int playerLevel = 0;
 	int currentPlayerHp;
 	int maxPlayerHp;
 	int exp = 0;

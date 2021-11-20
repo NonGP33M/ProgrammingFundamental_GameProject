@@ -5,7 +5,7 @@ Menu::Menu(sf::RenderWindow* window, sf::View view)
 	font.loadFromFile("Font/Notalot60.ttf");
 
 	buttonTextSize = 30;
-	transitionDebounce = 400;
+	transitionDebounce = 300;
 
 	greyScreen.setSize({ 1440.f, 900.f });
 	greyScreen.setFillColor(sf::Color(0.f, 0.f, 0.f, 204.f));
@@ -469,6 +469,7 @@ void Menu::nameUpdate(sf::Event& event)
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left) &&
 			debounce.getElapsedTime().asMilliseconds() >= transitionDebounce)
 		{
+			start = true;
 			states = PLAY;
 			debounce.restart();
 		}

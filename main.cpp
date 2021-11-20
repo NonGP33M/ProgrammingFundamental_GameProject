@@ -49,6 +49,11 @@ int main()
 				menu.nameUpdate(event);
 				menu.mainMenuRenderComponent();
 				menu.nameRender();
+				if (menu.startCheck())
+				{
+					menu.started();
+					game.gameReset();
+				}
 			}
 			if (state == PLAY)
 			{

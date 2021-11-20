@@ -5,7 +5,7 @@ Game::Game(sf::RenderWindow* window, sf::View view)
 	background.setSize({ 4608.f, 4608.f });
 	background.setOrigin(background.getSize().x / 2, background.getSize().y / 2);
 	background.setPosition(720.f, 450.f);
-	backgroundTexture.loadFromFile("Texture/Sprite/Map/Background.png");
+	backgroundTexture.loadFromFile("Texture/Map/Background.png");
 	background.setTexture(&backgroundTexture);
 
 	font.loadFromFile("Font/Notalot60.ttf");
@@ -27,10 +27,14 @@ Game::Game(sf::RenderWindow* window, sf::View view)
 void Game::pollEvent()
 {
 	//WEAPON SWITCH
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
-		currentSlot = 0;
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
-		currentSlot = 1;
+	if (attackCooldown)
+	{
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
+			currentSlot = 0;
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2) &&
+			weaponSlot[1] != 0)
+			currentSlot = 1;
+	}
 
 	//ATTACK
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) &&
@@ -44,13 +48,14 @@ void Game::pollEvent()
 
 void Game::screenUIupdate()
 {
-	gui.screenUI(player.getPos(), exp, maxExp, wave, weaponSlot[currentSlot],
+	gui.screenUI(player.getPos(), exp, maxExp, wave, weaponSlot[0],weaponSlot[1],
 		weaponDamage[currentSlot], playerBaseDamage, currentPlayerHp, maxPlayerHp,
-		currentSlot, deltatime, duringWave);
+		currentSlot, spawningTime, duringWave, attackCooldown,score);
 }
 
 void Game::takeItemUpdate()
 {
+	pickingTime += deltatime;
 	for (size_t i = 0; i < drop.size(); i++)
 	{
 		//ITEM EXPIRING
@@ -68,12 +73,14 @@ void Game::takeItemUpdate()
 					weaponSlot[0] = drop[i]->getWeaponType();
 					currentSlot = 0;
 					weaponDamage[0] = drop[i]->getDamage();
+					pickingTime = 0;
 				}
 				else if (weaponSlot[1] == 0)
 				{
 					weaponSlot[1] = drop[i]->getWeaponType();
 					currentSlot = 1;
 					weaponDamage[1] = drop[i]->getDamage();
+					pickingTime = 0;
 				}
 				else
 				{
@@ -81,19 +88,17 @@ void Game::takeItemUpdate()
 						weaponDamage[currentSlot], true, player.getPos()));
 					weaponSlot[currentSlot] = drop[i]->getWeaponType();
 					weaponDamage[currentSlot] = drop[i]->getDamage();
+					pickingTime = 0;
 				}
 				drop.erase(drop.begin() + i);
-				pickingTime = 0;
-			}
-			else
-				pickingTime += deltatime;
+			}	
 		}
-		
 	}
 }
 
 void Game::attackUpdate()
 {
+	std::cout << attackingTime << std::endl;
 	enableToAttack = false;
 
 	if (playerWeapon == SWORD)
@@ -105,14 +110,17 @@ void Game::attackUpdate()
 	if (attackingTime >= attackTimerMax)
 	{
 		attackCooldown = true;
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
+		if (weaponSlot[currentSlot] != 0)
 		{
-			attackCooldown = false;
-			attackingTime = 0;
-		}
-		if (!attackCooldown)
-		{
-			enableToAttack = true;
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
+			{
+				attackCooldown = false;
+				attackingTime = 0;
+			}
+			if (!attackCooldown)
+			{
+				enableToAttack = true;
+			}
 		}
 
 		//SUICIDE DEBUG
@@ -185,11 +193,16 @@ void Game::playerLevelUpdate()
 	if (currentPlayerHp <= 0 && !player.deadCheck())
 	{
 		currentPlayerHp = 0;
-		gameOverTime += deltatime;
 		player.isDead();
 	}
-	if (player.deadCheck() && gameOverTime >= 3.f)
-		gameOver = true;
+	if (player.deadCheck())
+	{
+		gameOverTime += deltatime;
+		if (gameOverTime >= 3.f)
+		{
+			gameOver = true;
+		}
+	}
 
 }
 
@@ -305,6 +318,9 @@ void Game::render()
 	for (size_t i = 0; i < enemies.size(); i++)
 	{
 		enemies[i]->render(*window);
+	}
+	for (size_t i = 0; i < enemies.size(); i++)
+	{
 		gui.enemyUI(enemies[i]->getHp(), enemies[i]->getMaxHp(),
 			enemies[i]->getPos(), enemies[i]->getSize(), *window);
 	}
@@ -320,7 +336,8 @@ void Game::render()
 void Game::gameReset()
 {
 	player.reset();
-	gameClock.restart();
+	gui.reset();
+	gameClock.restart().asSeconds();
 	player.animationReset();
 
 	currentSlot = 0;
@@ -378,6 +395,9 @@ void Game::pauseRender()
 	for (size_t i = 0; i < enemies.size(); i++)
 	{
 		enemies[i]->render(*window);
+	}
+	for (size_t i = 0; i < enemies.size(); i++)
+	{
 		gui.enemyUI(enemies[i]->getHp(), enemies[i]->getMaxHp(),
 			enemies[i]->getPos(), enemies[i]->getSize(), *window);
 	}

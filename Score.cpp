@@ -5,6 +5,11 @@ Score::Score()
     font.loadFromFile("Font/Notalot60.ttf");
 }
 
+bool Score::sortDes(const std::pair<int, std::string>& a, const std::pair<int, std::string>& b)
+{
+    return (a > b);
+}
+
 void Score::setScoreBoard()
 {
     for (int i = 0; i < 5; i++)
@@ -27,9 +32,8 @@ void Score::getName()
     fp = fopen("./Score/Score.txt", "r");
     for (int i = 0; i < 5; i++)
     {
-        fscanf(fp, "%s", &temp);
+        fscanf(fp, "%s %d\n", &temp, &score[i]);
         name[i] = temp;
-        fscanf(fp, "%d", &score[i]);
         scorePair.push_back(make_pair(score[i], name[i]));
     }
     fclose(fp);
@@ -43,14 +47,18 @@ void Score::writeFile(std::string playerName, int playerScore)
     score[5] = playerScore;
     strcpy(temp, playerName.c_str());
     scorePair.push_back(make_pair(score[5], name[5]));
-    std::sort(scorePair.begin(), scorePair.end());
+    for (int i = 0; i < 5; i++)
+        std::cout << scorePair[i].second.c_str() << std::endl;
+    std::sort(scorePair.begin(), scorePair.end(),sortDes);
+    std::cout << "=====" << std::endl;
+    for (int i = 0; i < 5; i++)
+        std::cout << scorePair[i].second.c_str() << std::endl;
     fclose(fp);
     
     fp = fopen("./Score/Score.txt", "w");
 
-    for (int i = 1; i <= 5; i++)
+    for (int i = 0; i < 5; i++)
     {
-        std::cout << scorePair[0].second.c_str() << std::endl;
         strcpy(temp, scorePair[i].second.c_str());
         fprintf(fp, "%s %d\n", temp, scorePair[i].first);
     }
@@ -64,8 +72,8 @@ void Score::render(sf::RenderTarget& window, sf::View view)
     setScoreBoard();
     for (int i = 0; i < 5; i++)
     {
-        leaderName[i].setPosition(view.getCenter().x - 300, view.getCenter().y + 50 - i * 50);
-        leaderScore[i].setPosition(view.getCenter().x + 200, view.getCenter().y + 50 - i * 50);
+        leaderName[i].setPosition(view.getCenter().x - 300, view.getCenter().y - 180 + i * 50);
+        leaderScore[i].setPosition(view.getCenter().x + 200, view.getCenter().y - 180 + i * 50);
         window.draw(leaderName[i]);
         window.draw(leaderScore[i]);
     }

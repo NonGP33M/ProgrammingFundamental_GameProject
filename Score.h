@@ -22,6 +22,8 @@ private:
 	std::vector<std::pair<int, std::string>> scorePair;
 public:
 	Score();
+	static bool sortDes(const std::pair<int, std::string> &a,
+		const std::pair<int, std::string>& b);
 	void setScoreBoard();
 	void getName();
 	void writeFile(std::string playerName, int playerScore);

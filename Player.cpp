@@ -2,7 +2,7 @@
 
 Player::Player()
 {
-	playerTexture.loadFromFile("Texture/Sprite/Player.png");
+	playerTexture.loadFromFile("Texture/Player.png");
 	currentFrame = { 0,0,32,32 };
 	playerSprite.setTexture(&playerTexture);
 	playerSprite.setSize({ 192.f, 192.f });

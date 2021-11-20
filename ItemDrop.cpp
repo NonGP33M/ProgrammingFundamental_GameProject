@@ -15,13 +15,13 @@ ItemDrop::ItemDrop(int type, int dmg, bool playerDrop, sf::Vector2f pos)
 		if (weaponType == 1)
 		{
 			damage = dmg / (rand() % 4 + 1);
-			texture.loadFromFile("Texture/Sprite/Sword.png");
+			texture.loadFromFile("Texture/Sword.png");
 
 		}
 		else if (weaponType == 2)
 		{
 			damage = dmg / (rand() % 4 + 1);
-			texture.loadFromFile("Texture/Sprite/Hammer.png");
+			texture.loadFromFile("Texture/Hammer.png");
 		}
 	}
 	//PLAYER DROP
@@ -30,13 +30,13 @@ ItemDrop::ItemDrop(int type, int dmg, bool playerDrop, sf::Vector2f pos)
 		if (type == 1)
 		{
 			damage = dmg;
-			texture.loadFromFile("Texture/Sprite/Sword.png");
+			texture.loadFromFile("Texture/Sword.png");
 			weaponType = 1;
 		}
 		else if (type == 2)
 		{
 			damage = dmg;
-			texture.loadFromFile("Texture/Sprite/Hammer.png");
+			texture.loadFromFile("Texture/Hammer.png");
 			weaponType = 2;
 		}
 		else
