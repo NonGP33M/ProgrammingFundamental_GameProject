@@ -44,20 +44,30 @@ int main()
 				menu.mainMenuUpdate();
 				menu.mainMenuRender();
 			}
+			if (state == NAME)
+			{
+				menu.nameUpdate(event);
+				menu.mainMenuRenderComponent();
+				menu.nameRender();
+			}
 			if (state == PLAY)
 			{
 				if (!game.gameOverCheck())
 				{
 					game.update();
+					menu.setScore(game.getScore());
 					menu.pauseCheck();
 					game.render();
 				}
 				else
+				{
 					menu.gameOver();
+				}
 			}
 			if (state == PAUSE)
 			{
 				menu.pauseMenuUpdate();
+				game.pauseRender();
 				menu.pauseMenuRender();
 			}
 
@@ -70,6 +80,7 @@ int main()
 			if (state == GAMEOVER)
 			{
 				menu.gameOverMenuUpdate();
+				game.pauseRender();
 				menu.gameOverMenuRender();
 				if (menu.tryAgainCheck())
 				{

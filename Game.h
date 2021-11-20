@@ -17,9 +17,7 @@ private:
 	sf::Texture backgroundTexture;
 	sf::Font font;
 	sf::Text enemyHp;
-	sf::Clock attackCoolDownClock;
-	sf::Clock enemySpawningClock;
-	sf::Clock pickingItemClock;
+	sf::Clock gameClock;
 
 	Player player;
 	std::vector<Enemy*> enemies;
@@ -32,7 +30,11 @@ private:
 	sf::Vector2f playerPos;
 	float playerBaseDamage;
 	float attackTimerMax;
-	float attackingTimer;
+	float attackingTime = 0;
+	float deltatime = 0;
+	float pickingTime = 0;
+	float gameOverTime = 0;
+	float spawningTime = 0;
 
 	int currentSlot = 0;
 	int weaponSlot[2];
@@ -57,11 +59,13 @@ private:
 	int enemyLeft;
 	int killCount = 0;
 	int spawnCount = 0;
+	int score = 0;
 
 public:
 	Game(sf::RenderWindow* window, sf::View view);
 	inline const sf::Vector2f getViewPos() { return view.getCenter(); }
 	inline const bool gameOverCheck() { return gameOver; }
+	inline const int getScore() { return score; }
 	void pollEvent();
 	void screenUIupdate();
 	void takeItemUpdate();
@@ -71,7 +75,9 @@ public:
 	void playerLevelUpdate();
 	void waveUpdate();
 	void enemyUpdate();
+	void itemDropUpdate();
 	void update();
 	void render();
 	void gameReset();
+	void pauseRender();
 };

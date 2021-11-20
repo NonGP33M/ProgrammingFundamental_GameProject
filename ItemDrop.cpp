@@ -103,10 +103,14 @@ void ItemDrop::animation()
 	}
 }
 
-void ItemDrop::render(sf::RenderTarget& other)
+void ItemDrop::update()
 {
 	warning();
 	animation();
+}
+
+void ItemDrop::render(sf::RenderTarget& other)
+{
 	if (showing)
 		other.draw(drop);
 }

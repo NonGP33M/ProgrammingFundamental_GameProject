@@ -1,5 +1,5 @@
-betterest 500
-betterer 400
-better 300
-great 200
-good 100
+NONE 9999
+NONE 9999
+NONE 9999
+NONE 9999
+NONE 9999

@@ -19,12 +19,15 @@ private:
 	sf::RectangleShape expBar;
 	sf::RectangleShape UIHUD;
 	sf::Texture HUDTexture;
+	float opacity = 0;
+	float time = 0;
 
 public:
 	GUI();
 	void enemyUI(int currentHp, int maxHp, sf::Vector2f pos, sf::Vector2f size, sf::RenderTarget& other);
 	void screenUI(sf::Vector2f pos, float currentEXP, float maxEXP, int wave, 
-		int currentWeapon, int weaponDamage, int baseDamage, float currentPlayerHp, float maxPlayerHp, int slot);
+		int currentWeapon, int weaponDamage, int baseDamage, float currentPlayerHp,
+		float maxPlayerHp, int slot, float waveTime, bool duringWave);
 	void render(sf::RenderTarget& other);
 };
 

@@ -2,17 +2,15 @@
 
 GUI::GUI()
 {
-	font.loadFromFile("Font/Retro Gaming.ttf");
+	font.loadFromFile("Font/Notalot60.ttf");
 
 	exp.setFont(font);
 	exp.setFillColor(sf::Color::Black);
-	exp.setCharacterSize(16);
+	exp.setCharacterSize(24);
 
 	wave.setFont(font);
-	wave.setFillColor(sf::Color::White);
-	wave.setCharacterSize(24);
-	wave.setOutlineThickness(1.f);
-	wave.setOutlineColor(sf::Color::Black);
+	wave.setCharacterSize(256);
+	wave.setLetterSpacing(3);
 
 	enemyHp.setFont(font);
 	enemyHp.setFillColor(sf::Color::White);
@@ -29,7 +27,7 @@ GUI::GUI()
 
 	currentPlayerHp.setFont(font);
 	currentPlayerHp.setFillColor(sf::Color::Black);
-	currentPlayerHp.setCharacterSize(16);
+	currentPlayerHp.setCharacterSize(24);
 
 	maxHpBar.setSize({ 259.f,22.f });
 
@@ -40,13 +38,13 @@ GUI::GUI()
 
 	weaponSlot.setFont(font);
 	weaponSlot.setFillColor(sf::Color::White);
-	weaponSlot.setCharacterSize(24);
+	weaponSlot.setCharacterSize(20);
 	weaponSlot.setOutlineThickness(1.f);
 	weaponSlot.setOutlineColor(sf::Color::Black);
 	
 	weaponSlot_1.setFont(font);
 	weaponSlot_1.setFillColor(sf::Color::White);
-	weaponSlot_1.setCharacterSize(24);
+	weaponSlot_1.setCharacterSize(20);
 	weaponSlot_1.setOutlineThickness(1.f);
 	weaponSlot_1.setOutlineColor(sf::Color::Black);
 
@@ -65,15 +63,33 @@ void GUI::enemyUI(int currentHp, int maxHp, sf::Vector2f pos, sf::Vector2f size,
 
 void GUI::screenUI(sf::Vector2f pos, float currentEXP, float maxEXP, int wave, 
 	int currentWeapon, int weaponDamage, int baseDamage, float currentPlayerHp, 
-	float maxPlayerHp, int slot)
+	float maxPlayerHp, int slot, float waveTime ,bool duringWave)
 {
+	time += waveTime;
 	UIHUD.setPosition(pos.x, pos.y);
-	exp.setString("EXP:" + std::to_string(static_cast<int>(currentEXP)) + "/" + std::to_string(static_cast<int>(maxEXP)));
-	exp.setPosition(pos.x - 690, pos.y - 386);
 
-	this->wave.setString("Waves : " + std::to_string(wave));
-	this->wave.setPosition(pos.x + 550, pos.y - 430);
+	this->currentPlayerHp.setString("HP: " + std::to_string(static_cast<int>(currentPlayerHp)) + "/" 
+		+ std::to_string(static_cast<int>(maxPlayerHp)));
+	exp.setString("EXP: " + std::to_string(static_cast<int>(currentEXP)) + "/" 
+		+ std::to_string(static_cast<int>(maxEXP)));
 
+	this->currentPlayerHp.setPosition(pos.x - 680, pos.y - 416);
+	exp.setPosition(pos.x - 680, pos.y - 386);
+
+	this->wave.setString("Wave  " + std::to_string(wave+1));
+	this->wave.setOrigin(this->wave.getLocalBounds().width / 2, this->wave.getLocalBounds().height / 2);
+	this->wave.setPosition(pos.x, pos.y);
+
+	if (!duringWave)
+	{
+		if (waveTime >= 1.5f && waveTime <= 2.5f && opacity <= 252.45f)
+			opacity += 2.55f;
+		else if (waveTime >= 4.f && opacity >= 2.55f)
+			opacity -= 2.55f;
+	}
+	else
+		time = 0;
+	this->wave.setFillColor(sf::Color(255, 255, 255, opacity));
 	maxHpBar.setPosition(pos.x - 563, pos.y - 416);
 
 	currentHpBar.setPosition(maxHpBar.getPosition());
@@ -83,10 +99,6 @@ void GUI::screenUI(sf::Vector2f pos, float currentEXP, float maxEXP, int wave,
 
 	expBar.setPosition(maxEXPBar.getPosition());
 	expBar.setSize({ maxEXPBar.getLocalBounds().width * (currentEXP / maxEXP), maxEXPBar.getLocalBounds().height });
-
-	this->currentPlayerHp.setString("HP:" + std::to_string(static_cast<int>(currentPlayerHp)) + 
-		"/" + std::to_string(static_cast<int>(maxPlayerHp)));
-	this->currentPlayerHp.setPosition(pos.x - 690, pos.y - 416);
 
 	if (currentWeapon == 0)
 		weapon.setString("WeaponUsing : Nothing (NO DAMAGE)");

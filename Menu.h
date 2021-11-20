@@ -3,7 +3,7 @@
 #include "Game.h"
 #include "Score.h"
 
-enum STATE { MENU, PLAY, PAUSE, LEADERBOARD, GAMEOVER};
+enum STATE { MENU, PLAY, PAUSE, LEADERBOARD, GAMEOVER, NAME};
 
 class Menu
 {
@@ -14,6 +14,9 @@ private:
 	sf::Font font;
 	sf::Vector2f buttonSize = { 350.f, 80.f };
 	sf::Clock debounce;
+	sf::Clock KeyClock;
+
+	sf::RectangleShape greyScreen;
 
 	//MAIN_MENU
 	sf::Text title;
@@ -29,7 +32,6 @@ private:
 	//PAUSE_MENU
 	sf::Text resumeButtonText;
 	sf::Text mainMenuButtonText;
-	sf::RectangleShape pauseMenuBackground;
 	sf::RectangleShape resumeButton;
 	sf::RectangleShape mainMenuButton;
 
@@ -44,10 +46,21 @@ private:
 	sf::Text tryAgainButtonText;
 	sf::RectangleShape tryAgainButton;
 
+	//NAME_MENU
+	sf::RectangleShape nameFrame;
+	sf::RectangleShape nameFill;
+	sf::RectangleShape confirmButton;
+	sf::Text confirmButtonText;
+	sf::Text name;
+	
+	std::string enteredName;
+	int buttonTextSize;
+	
 	bool tryAgainClick = false;
-	bool transition = false;
+	bool enableToType = true;
 	float transitionDebounce;
 	int states;
+	int playerScore;
 public:
 	Menu(sf::RenderWindow* window, sf::View view);
 	inline int getStates() { return states; }
@@ -55,6 +68,8 @@ public:
 	inline void tryAgainClickSetToFalse() { tryAgainClick = false; }
 	inline void gameOver() { states = GAMEOVER; }
 	inline void tryAgain() { states = PLAY; }
+	inline void setScore(int score) { playerScore = score; }
+	void nameReset();
 	void pauseCheck();
 	void mainMenuUpdate();
 	void mainMenuRender();
@@ -64,5 +79,8 @@ public:
 	void pauseMenuRender();
 	void gameOverMenuUpdate();
 	void gameOverMenuRender();
+	void nameUpdate(sf::Event& event);
+	void nameRender();
+	void mainMenuRenderComponent();
 };
 

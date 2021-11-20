@@ -8,7 +8,7 @@ Game::Game(sf::RenderWindow* window, sf::View view)
 	backgroundTexture.loadFromFile("Texture/Sprite/Map/Background.png");
 	background.setTexture(&backgroundTexture);
 
-	font.loadFromFile("Font/Retro Gaming.ttf");
+	font.loadFromFile("Font/Notalot60.ttf");
 
 	enemyHp.setFont(font);
 	enemyHp.setCharacterSize(16);
@@ -34,7 +34,7 @@ void Game::pollEvent()
 
 	//ATTACK
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) &&
-		playerWeapon != NOTHING && enableToAttack && 
+		playerWeapon != NOTHING && enableToAttack &&
 		!player.attackingCheck())
 	{
 		player.setMoving(false);
@@ -45,7 +45,8 @@ void Game::pollEvent()
 void Game::screenUIupdate()
 {
 	gui.screenUI(player.getPos(), exp, maxExp, wave, weaponSlot[currentSlot],
-		weaponDamage[currentSlot], playerBaseDamage, currentPlayerHp, maxPlayerHp, currentSlot);
+		weaponDamage[currentSlot], playerBaseDamage, currentPlayerHp, maxPlayerHp,
+		currentSlot, deltatime, duringWave);
 }
 
 void Game::takeItemUpdate()
@@ -60,7 +61,7 @@ void Game::takeItemUpdate()
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::E)
 			&& drop[i]->getBound().intersects(player.getBound()))
 		{
-			if (pickingItemClock.getElapsedTime().asSeconds() >= 2.f)
+			if (pickingTime >= 2.f)
 			{
 				if (weaponSlot[0] == 0)
 				{
@@ -82,9 +83,12 @@ void Game::takeItemUpdate()
 					weaponDamage[currentSlot] = drop[i]->getDamage();
 				}
 				drop.erase(drop.begin() + i);
-				pickingItemClock.restart();
+				pickingTime = 0;
 			}
+			else
+				pickingTime += deltatime;
 		}
+		
 	}
 }
 
@@ -98,13 +102,13 @@ void Game::attackUpdate()
 		attackTimerMax = 1.5f;
 
 	//ATTACK COOLDOWN
-	if (attackCoolDownClock.getElapsedTime().asSeconds() >= attackTimerMax)
+	if (attackingTime >= attackTimerMax)
 	{
 		attackCooldown = true;
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
 		{
 			attackCooldown = false;
-			attackCoolDownClock.restart();
+			attackingTime = 0;
 		}
 		if (!attackCooldown)
 		{
@@ -115,12 +119,14 @@ void Game::attackUpdate()
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::R))
 		{
 			attackCooldown = false;
-			attackCoolDownClock.restart();
-			currentPlayerHp -= 5;
+			attackingTime = 0;
+			currentPlayerHp -= 50;
 			drop.push_back(new ItemDrop(weaponSlot[currentSlot],
 				weaponDamage[currentSlot], true, player.getPos()));
 		}
 	}
+	else
+		attackingTime += deltatime;
 }
 
 void Game::playerAttackRange()
@@ -143,10 +149,14 @@ void Game::playerAttack()
 			if (enemies[i]->getHp() <= 0)
 			{
 				exp += enemies[i]->getEXP();
+				if (!enemies[i]->bossCheck())
+					score += 10;
+				else
+					score += 50;
 
 				//DROP
 				if (enemies[i]->bossCheck() || rand() % 10 < 1)
-					drop.push_back(new ItemDrop(wave,enemies[i]->getMaxHp(),false, enemies[i]->getPos()));
+					drop.push_back(new ItemDrop(wave, enemies[i]->getMaxHp(), false, enemies[i]->getPos()));
 				enemies.erase(enemies.begin() + i);
 
 				killCount++;
@@ -172,7 +182,13 @@ void Game::playerLevelUpdate()
 	}
 
 	//DEAD
-	if (currentPlayerHp <= 0)
+	if (currentPlayerHp <= 0 && !player.deadCheck())
+	{
+		currentPlayerHp = 0;
+		gameOverTime += deltatime;
+		player.isDead();
+	}
+	if (player.deadCheck() && gameOverTime >= 3.f)
 		gameOver = true;
 
 }
@@ -180,7 +196,7 @@ void Game::playerLevelUpdate()
 void Game::waveUpdate()
 {
 	//DURING WAVE
-	if (enemySpawningClock.getElapsedTime().asSeconds() >= 5.f && !duringWave)
+	if (spawningTime >= 6.f && !duringWave)
 	{
 		wave++;
 		if (wave % 5 != 0)
@@ -201,8 +217,14 @@ void Game::waveUpdate()
 	else if (enemyLeft == 0 && duringWave == true)
 	{
 		duringWave = false;
-		enemySpawningClock.restart();
+		deltatime = 0;
 	}
+
+	if (duringWave)
+		spawningTime = 0;
+	else
+		spawningTime += deltatime;
+
 }
 
 void Game::enemyUpdate()
@@ -216,7 +238,7 @@ void Game::enemyUpdate()
 		//ENEMIES DAMAGE PLAYER
 		if (enemies[i]->getHitBoxBound().intersects(player.getBound()))
 		{
-			if (!enemies[i]->enemyAttackCooldown())
+			if (!enemies[i]->enemyAttackCooldown() && !player.deadCheck())
 			{
 				enemies[i]->doDamage(currentPlayerHp);
 				player.knockBack(enemies[i]->getNormalizedDir());
@@ -230,6 +252,15 @@ void Game::enemyUpdate()
 			if (i != j)
 				enemies[i]->checkObstruct(enemies[i]->getBound(), enemies[j]->getBound());
 		}
+
+	}
+}
+
+void Game::itemDropUpdate()
+{
+	for (size_t i = 0; i < drop.size(); i++)
+	{
+		drop[i]->update();
 	}
 }
 
@@ -242,10 +273,12 @@ void Game::update()
 	playerAttack();
 	takeItemUpdate();
 	attackUpdate();
+	itemDropUpdate();
 	waveUpdate();
 	enemyUpdate();
 	screenUIupdate();
 	playerWeapon = weaponSlot[currentSlot];
+	deltatime = gameClock.restart().asSeconds();
 }
 
 void Game::render()
@@ -287,7 +320,7 @@ void Game::render()
 void Game::gameReset()
 {
 	player.reset();
-	enemySpawningClock.restart();
+	gameClock.restart();
 	player.animationReset();
 
 	currentSlot = 0;
@@ -307,10 +340,50 @@ void Game::gameReset()
 	enemyLeft = 0;
 	killCount = 0;
 	spawnCount = 0;
+	score = 0;
 
 	duringWave = false;
 	gameOver = false;
 
+	deltatime = 0;
+	pickingTime = 0;
+	attackingTime = 0;
+	gameOverTime = 0;
+	spawningTime = 0;
+
 	drop.clear();
 	enemies.clear();
+}
+
+void Game::pauseRender()
+{
+	window->clear();
+	//VIEW
+	view.setCenter(player.getPos());
+	window->setView(view);
+
+	//BACKGROUND
+	window->draw(background);
+
+	//DROP
+	for (size_t i = 0; i < drop.size(); i++)
+	{
+		drop[i]->render(*window);
+	}
+
+	//HITBOX
+	weaponHitbox.render(*window);
+
+	//ENEMIES
+	for (size_t i = 0; i < enemies.size(); i++)
+	{
+		enemies[i]->render(*window);
+		gui.enemyUI(enemies[i]->getHp(), enemies[i]->getMaxHp(),
+			enemies[i]->getPos(), enemies[i]->getSize(), *window);
+	}
+
+	//PLAYER
+	player.render(*window);
+
+	gui.render(*window);
 }

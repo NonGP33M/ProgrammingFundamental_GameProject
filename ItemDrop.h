@@ -22,6 +22,7 @@ public:
 	inline const float getTime() { return timer.getElapsedTime().asSeconds(); }
 	void warning();
 	void animation();
+	void update();
 	void render(sf::RenderTarget& other);
 };
 

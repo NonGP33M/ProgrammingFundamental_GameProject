@@ -79,8 +79,8 @@ void Enemy::movement(sf::Vector2f playerPos, sf::Vector2f playerHitBoxPos, sf::F
 	//TAXIS MOVEMENT
 	if (enemySight.getGlobalBounds().intersects(playerBound))
 	{
-		enemy.move(movementSpeed * normalizedDir.x, movementSpeed * normalizedDir.y);
-		enemyHitBox.move(movementSpeed * 2 * normalizedDir.x * 25, movementSpeed * 2 * normalizedDir.y * 25);
+		enemy.move(movementSpeed * 2 * normalizedDir.x, movementSpeed * 2 * normalizedDir.y);
+		enemyHitBox.move(movementSpeed * normalizedDir.x * 25, movementSpeed * normalizedDir.y * 25);
 	}
 	//RANDOM MOVEMENT
 	else

@@ -2,7 +2,7 @@
 #include<SFML/Graphics.hpp>
 #include<iostream>
 
-enum animationState {LEFT, RIGHT, TOP, DOWN };
+enum animationState {LEFT, RIGHT, TOP, DOWN};
 
 class Player
 {
@@ -17,6 +17,7 @@ private:
 	float movementSpeed = 2.f;
 	int animStates = TOP;
 	int animCount = 0;
+	bool dead = false;
 	bool isMoving = false;
 	bool ableToMove = true;
 	bool isAttacking = false;
@@ -29,7 +30,9 @@ public:
 	inline const int getPlayerState() { return animStates; }
 	inline const bool movingCheck() { return isMoving; }
 	inline const bool attackingCheck() { return isAttacking; }
+	inline const bool deadCheck() { return dead; }
 	inline void animationReset() { animStates = TOP; }
+	inline void isDead() { dead = true; currentFrame.left = 0; }
 	inline void setMoving(bool set) { ableToMove = set; animCount = 0; }
 	inline void attacking() { isAttacking = true; attackTimer.restart(); }
 	void knockBack(sf::Vector2f knockBackDir);

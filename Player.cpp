@@ -33,7 +33,7 @@ void Player::knockBack(sf::Vector2f knockBackDir)
 void Player::movement()
 {
 	//MOVING AND ANIMATION STATE
-	if (ableToMove && !isAttacking)
+	if (ableToMove && !isAttacking && !dead)
 	{
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
 		{
@@ -89,7 +89,8 @@ void Player::movement()
 
 void Player::animation()
 {
-	if (ableToMove)
+	//MOVING
+	if (ableToMove && !dead)
 	{
 		if (animStates == DOWN)
 		{
@@ -141,7 +142,8 @@ void Player::animation()
 			}
 		}
 	}
-	else
+	//ATTACKING
+	else if (isAttacking && !dead)
 	{
 		if (animStates == DOWN && isAttacking)
 		{
@@ -192,6 +194,7 @@ void Player::animation()
 					animCount++;
 				playerSprite.setTextureRect(currentFrame);
 				animationTimer.restart();
+				animationTimer.restart();
 			}
 		}
 		else if (animStates == LEFT && isAttacking)
@@ -207,6 +210,50 @@ void Player::animation()
 				}
 				else
 					animCount++;
+				playerSprite.setTextureRect(currentFrame);
+				animationTimer.restart();
+			}
+		}
+	}
+	//DEAD
+	else
+	{
+		if (animStates == DOWN)
+		{
+			currentFrame.top = 384;
+			if (animationTimer.getElapsedTime().asSeconds() >= 0.15f)
+			{
+				currentFrame.left += 32;
+				playerSprite.setTextureRect(currentFrame);
+				animationTimer.restart();
+			}
+		}
+		if (animStates == RIGHT)
+		{
+			currentFrame.top = 416;
+			if (animationTimer.getElapsedTime().asSeconds() >= 0.15f)
+			{
+				currentFrame.left += 32;
+				playerSprite.setTextureRect(currentFrame);
+				animationTimer.restart();
+			}
+		}
+		else if (animStates == TOP)
+		{
+			currentFrame.top = 448;
+			if (animationTimer.getElapsedTime().asSeconds() >= 0.15f)
+			{
+				currentFrame.left += 32;
+				playerSprite.setTextureRect(currentFrame);
+				animationTimer.restart();
+			}
+		}
+		else if (animStates == LEFT)
+		{
+			currentFrame.top = 480;
+			if (animationTimer.getElapsedTime().asSeconds() >= 0.15f)
+			{
+				currentFrame.left += 32;
 				playerSprite.setTextureRect(currentFrame);
 				animationTimer.restart();
 			}
@@ -228,7 +275,6 @@ void Player::update()
 	attack();
 	movement();
 	animation();
-	std::cout << currentFrame.left << std::endl;
 }
 
 void Player::render(sf::RenderTarget& other)
@@ -242,6 +288,7 @@ void Player::reset()
 	playerSprite.setPosition(720.f, 450.f);
 	animStates = TOP;
 	animCount = 0;
+	dead = false;
 	isMoving = false;
 	ableToMove = true;
 	isAttacking = false;
