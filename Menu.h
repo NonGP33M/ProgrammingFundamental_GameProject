@@ -87,7 +87,7 @@ public:
 	void pauseMenuRender();
 	void gameOverMenuUpdate();
 	void gameOverMenuRender();
-	void nameUpdate(sf::Event& event);
+	void nameUpdate(std::vector<sf::Event> event);
 	void nameRender();
 	void mainMenuRenderComponent();
 };

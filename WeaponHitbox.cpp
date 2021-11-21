@@ -16,13 +16,13 @@ void WeaponHitbox::setHitbox(float posX, float posY, int type, int state, bool i
 	}
 	else if (type == 1)
 	{
-		range = 90.f;
+		range = 120.f;
 		width = 190.f;
 	}
 	else if (type == 2)
 	{
-		range = 150.f;
-		width = 175.f;
+		range = 120.f;
+		width = 190.f;
 	}
 
 	if (state == 0)

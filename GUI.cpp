@@ -45,6 +45,10 @@ GUI::GUI()
 	scoreLabel.setFillColor(sf::Color::Black);
 	scoreLabel.setCharacterSize(20);
 
+	enemyToGo.setFont(font);
+	enemyToGo.setFillColor(sf::Color::White);
+	enemyToGo.setCharacterSize(20);
+
 	UIHUD.setSize({ 1440.f,900.f });
 	UIHUD.setOrigin(UIHUD.getLocalBounds().width / 2, UIHUD.getLocalBounds().height / 2);
 	HUDTexture.loadFromFile("Texture/UI.png");
@@ -77,8 +81,14 @@ void GUI::enemyUI(int currentHp, int maxHp, sf::Vector2f pos, sf::Vector2f size,
 void GUI::screenUI(sf::Vector2f pos, float currentEXP, float maxEXP, int wave,
 	int weapon_1, int weapon_2, int weaponDamage, int baseDamage, float currentPlayerHp,
 	float maxPlayerHp, int slot, float waveTime, bool duringWave, bool enableToAttack, int score,
-	bool isKnockingBack)
+	bool isKnockingBack,int enemyleft)
 {
+	//ENEMY TO GO
+	if (duringWave)
+		enemyToGo.setString(std::to_string(8 - enemyleft) + "  /  8");
+	else
+		enemyToGo.setString("");
+
 	//HP & EXP
 	this->currentPlayerHp.setString("HP: " + std::to_string(static_cast<int>(currentPlayerHp)) + "/"
 		+ std::to_string(static_cast<int>(maxPlayerHp)));
@@ -194,6 +204,9 @@ void GUI::screenUI(sf::Vector2f pos, float currentEXP, float maxEXP, int wave,
 
 
 	//SET POSITION
+	enemyToGo.setPosition(pos.x + 652, pos.y - 330);
+	enemyToGo.setOrigin(enemyToGo.getLocalBounds().width / 2, enemyToGo.getLocalBounds().top);
+
 	damage.setPosition(pos.x - 380, pos.y + 395);
 	damage.setOrigin(damage.getLocalBounds().width / 2, damage.getLocalBounds().top);
 
@@ -249,6 +262,8 @@ void GUI::render(sf::RenderTarget& other)
 	other.draw(score);
 
 	other.draw(damage);
+
+	other.draw(enemyToGo);
 
 	other.draw(this->wave);
 

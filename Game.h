@@ -29,7 +29,7 @@ private:
 	sf::Vector2f playerPos;
 	float playerBaseDamage;
 	float attackTimerMax;
-	float attackingTimer = 0;
+	float attackingTimer = 3;
 	float deltatime = 0;
 	float pickingTime = 0;
 	float gameOverTime = 0;
@@ -75,6 +75,7 @@ public:
 	void waveUpdate();
 	void enemyUpdate();
 	void itemDropUpdate();
+	void playerUpdate();
 	void update();
 	void render();
 	void gameReset();

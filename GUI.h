@@ -15,6 +15,7 @@ private:
 	sf::Text damage;
 	sf::Text scoreLabel;
 	sf::Text score;
+	sf::Text enemyToGo;
 	sf::RectangleShape maxHpBar;
 	sf::RectangleShape currentHpBar;
 	sf::RectangleShape maxEXPBar;
@@ -43,7 +44,7 @@ public:
 	void screenUI(sf::Vector2f pos, float currentEXP, float maxEXP, int wave, 
 		int weapon_1, int weapon_2, int weaponDamage, int baseDamage, float currentPlayerHp,
 		float maxPlayerHp, int slot, float waveTime, bool duringWave, bool enableToAttack, int score,
-		bool isKnockingBack);
+		bool isKnockingBack, int enemyleft);
 	void render(sf::RenderTarget& other);
 	void reset();
 };

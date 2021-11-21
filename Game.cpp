@@ -38,14 +38,17 @@ void Game::timeTicking(float deltatime)
 
 void Game::pollEvent()
 {
-	if (enableToAttack && !player.knockingBackCheck())
+	if (enableToAttack)
 	{
 		//WEAPON SWITCH
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
-			currentSlot = 0;
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2) &&
-			weaponSlot[1] != 0)
-			currentSlot = 1;
+		if (!player.knockingBackCheck())
+		{
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
+				currentSlot = 0;
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2) &&
+				weaponSlot[1] != 0)
+				currentSlot = 1;
+		}
 
 		//ATTACK
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) &&
@@ -56,7 +59,8 @@ void Game::pollEvent()
 			player.attacking();
 		}
 	}
-	
+	player.changeWeapon(weaponSlot[currentSlot]);
+
 }
 
 void Game::screenUIupdate()
@@ -64,7 +68,7 @@ void Game::screenUIupdate()
 	gui.screenUI(player.getPos(), exp, maxExp, wave, weaponSlot[0], weaponSlot[1],
 		weaponDamage[currentSlot], playerBaseDamage, currentPlayerHp, maxPlayerHp,
 		currentSlot, spawningTime, duringWave, enableToAttack, score,
-		player.knockingBackCheck());
+		player.knockingBackCheck(),enemyLeft);
 }
 
 void Game::takeItemUpdate()
@@ -153,20 +157,26 @@ void Game::playerAttack()
 				enemies[i]->takeDamage(weaponDamage[currentSlot] + playerBaseDamage, weaponSlot[currentSlot]);
 				enemies[i]->knockBack();
 			}
-			//IF ENEMIES DIE
-			if (enemies[i]->getHp() <= 0)
+		}
+	}
+	for (size_t i = 0; i < enemies.size(); i++)
+	{
+		//IF ENEMIES DIE
+		if (enemies[i]->getHp() <= 0)
+		{
+			enemies[i]->killed();
+			if (enemies[i]->deadCheck())
 			{
+				//DROP
+				if (enemies[i]->bossCheck() || rand() % 10 < 1)
+					drop.push_back(new ItemDrop(wave, enemies[i]->getDamage(),
+						false, enemies[i]->getPos()));
 				exp += enemies[i]->getEXP();
 				if (!enemies[i]->bossCheck())
 					score += 10;
 				else
 					score += 50;
-
-				//DROP
-				if (enemies[i]->bossCheck() || rand() % 10 < 1)
-					drop.push_back(new ItemDrop(wave, enemies[i]->getDamage(), false, enemies[i]->getPos()));
 				enemies.erase(enemies.begin() + i);
-
 				killCount++;
 				enemyLeft--;
 			}
@@ -193,7 +203,7 @@ void Game::playerLevelUpdate()
 	if (currentPlayerHp <= 0 && !player.deadCheck())
 	{
 		currentPlayerHp = 0;
-		player.isDead();
+		player.dead();
 	}
 	if (player.deadCheck())
 	{
@@ -243,13 +253,15 @@ void Game::enemyUpdate()
 	{
 		//UPDATE
 		enemies[i]->timeTicking(deltatime);
+		enemies[i]->movement(player.getPos(), weaponHitbox.getPos(), player.getBound()
+			, !player.deadCheck());
 		enemies[i]->update();
-		enemies[i]->movement(player.getPos(), weaponHitbox.getPos(), player.getBound());
 
 		//ENEMIES DAMAGE PLAYER
 		if (enemies[i]->getHitBoxBound().intersects(player.getBound()))
 		{
-			if (!enemies[i]->enemyAttackCooldown() && !player.deadCheck())
+			if (!enemies[i]->enemyAttackCooldown() && !player.deadCheck()
+				&& !enemies[i]->killedCheck())
 			{
 				enemies[i]->doDamage(currentPlayerHp);
 				player.knockback(enemies[i]->getNormalizedDir());
@@ -257,13 +269,16 @@ void Game::enemyUpdate()
 		}
 
 		//ENEMIES COLLISION CHECK
-		enemies[i]->checkObstruct(enemies[i]->getBound(), player.getBound());
-		for (size_t j = 0; j < i; j++)
+		if (!enemies[i]->killedCheck())
 		{
-			if (i != j)
-				enemies[i]->checkObstruct(enemies[i]->getBound(), enemies[j]->getBound());
-		}
+			enemies[i]->checkObstruct(player.getBound());
 
+			for (size_t j = 0; j < i; j++)
+			{
+				if (i != j && !enemies[i]->killedCheck())
+					enemies[i]->checkObstruct(enemies[j]->getBound());
+			}
+		}
 	}
 }
 
@@ -275,15 +290,25 @@ void Game::itemDropUpdate()
 	}
 }
 
+void Game::playerUpdate()
+{
+	playerLevelUpdate();
+	playerAttackRange();
+	playerAttack();
+	attackUpdate();
+	for (size_t i = 0; i < enemies.size(); i++)
+	{
+		if (!enemies[i]->killedCheck())
+			player.enemyCollisionUpdate(enemies[i]->getBound());
+	}
+}
+
 void Game::update()
 {
 	player.update();
 	pollEvent();
-	playerLevelUpdate();
-	playerAttackRange();
-	playerAttack();
+	playerUpdate();
 	takeItemUpdate();
-	attackUpdate();
 	itemDropUpdate();
 	waveUpdate();
 	enemyUpdate();
@@ -313,8 +338,9 @@ void Game::render()
 	}
 	for (size_t i = 0; i < enemies.size(); i++)
 	{
-		gui.enemyUI(enemies[i]->getHp(), enemies[i]->getMaxHp(),
-			enemies[i]->getPos(), enemies[i]->getSize(), *window);
+		if (!enemies[i]->killedCheck())
+			gui.enemyUI(enemies[i]->getHp(), enemies[i]->getMaxHp(),
+				enemies[i]->getPos(), enemies[i]->getSize(), *window);
 	}
 
 	//PLAYER
@@ -361,7 +387,7 @@ void Game::gameReset()
 
 	deltatime = 0;
 	pickingTime = 0;
-	attackingTimer = 0;
+	attackingTimer = 3;
 	gameOverTime = 0;
 	spawningTime = 0;
 

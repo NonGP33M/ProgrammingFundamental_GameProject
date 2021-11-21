@@ -2,7 +2,6 @@
 #include<SFML/Graphics.hpp>
 #include<iostream>
 
-
 class Enemy
 {
 private:
@@ -12,8 +11,15 @@ private:
 	sf::FloatRect nextPos;
 	sf::Vector2f position;
 	sf::Vector2f size;
+	sf::Texture enemyTexture;
+	sf::IntRect currentFrame;
 
 	int type;
+	bool dirState;
+	bool tracking;
+	bool isKilled = false;
+	bool isDead = false;
+	float waveMultiply;
 	float randomX;
 	float randomY;
 	float timeStamp;
@@ -24,13 +30,18 @@ private:
 	float damage;
 	float timeAfter;
 	float timeBefore;
+	bool isMoving;
 	bool enableToAttack;
 	bool cooldown;
 	bool isBoss;
-	bool knockingback = false;
+	bool knockingBack = false;
+	int hitBy;
+	float knockBackRate;
 
 	float attackTimer = 0;
 	float movingTimer = 0;
+	float animationTimer = 0;
+	float deadTimer = 0;
 
 	float knockbackspeed = 5;
 
@@ -55,14 +66,20 @@ public:
 	inline const bool enemyAttackCooldown() { return cooldown; }
 	inline const float randomAngle() { return ((rand()%2001)-1000);}
 	inline const float randomTime(int range, int add) { return rand() % range + add; }
-	inline void knockBack() { knockingback = true; }
+	inline void knockBack() { knockingBack = true; }
+	inline void killed() { isKilled = true; }
+	inline bool deadCheck() { return isDead; }
+	inline bool killedCheck() { return isKilled; }
+
 	void timeTicking(float deltatime);
 	void attackCooldown();
+	void animation();
 	void doDamage(int& playerHp);
 	void takeDamage(float damage, int weapon);
 	void knockBackUpdate();
-	void movement(sf::Vector2f playerPos, sf::Vector2f playerHitBoxPos, sf::FloatRect playerBound);
-	void checkObstruct(sf::FloatRect thisPos, sf::FloatRect otherPos);
+	void movement(sf::Vector2f playerPos, sf::Vector2f playerHitBoxPos, sf::FloatRect playerBound, bool isAlive);
+	void checkObstruct(sf::FloatRect otherPos);
+	void deadUpdate();
 	void update();
 	void render(sf::RenderTarget& other);
 };

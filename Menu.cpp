@@ -480,7 +480,7 @@ void Menu::gameOverMenuRender()
 	window->display();
 }
 
-void Menu::nameUpdate(sf::Event& event)
+void Menu::nameUpdate(std::vector<sf::Event> events)
 {
 	sf::Vector2i gamePos = sf::Mouse::getPosition(*window);
 	sf::Vector2f screenPos = window->mapPixelToCoords(gamePos);
@@ -528,24 +528,26 @@ void Menu::nameUpdate(sf::Event& event)
 	}
 
 	//NAME TYPING
-
-	if (event.type == sf::Event::TextEntered &&
-		!sf::Keyboard::isKeyPressed(sf::Keyboard::Enter) &&
-		event.text.unicode != 32)
+	for (int i = 0; i < events.size(); i++)
 	{
-		if (event.text.unicode == 8 && enteredName.length() > 0 &&
-			typingDebounce >= 0.1f)
+		if (events[i].type == sf::Event::TextEntered &&
+			!sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))
 		{
-			enteredName.erase(enteredName.length() - 1);
-			typingDebounce = 0;
-		}
-		else if (event.text.unicode < 128 && enteredName.length() < 8 &&
-			event.text.unicode != 8 && (event.text.unicode < 48 ||
-			event.text.unicode > 57) && typingDebounce >= 0.2f)
-		{
-			name.setFillColor(sf::Color::White);
-			enteredName += static_cast<char>(event.text.unicode);
-			typingDebounce = 0;
+			if (events[i].text.unicode == 32 && enteredName.length() < 10)
+			{
+				enteredName += static_cast<char>(95);
+			}
+			if (events[i].text.unicode == 8 && enteredName.length() > 0)
+			{
+				enteredName.erase(enteredName.length() - 1);
+			}
+			else if (events[i].text.unicode < 128 && enteredName.length() < 10 &&
+				events[i].text.unicode != 8 && (events[i].text.unicode < 48 ||
+					events[i].text.unicode > 57))
+			{
+				name.setFillColor(sf::Color::White);
+				enteredName += static_cast<char>(events[i].text.unicode);
+			}
 		}
 	}
 	if (enteredName == "")

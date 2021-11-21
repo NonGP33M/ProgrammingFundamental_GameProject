@@ -2,12 +2,14 @@
 
 Enemy::Enemy(char type, float posX, float posY, float wave)
 {
+	enemy.setTexture(&enemyTexture);
+	currentFrame = { 0,0,16,16 };
+	enemy.setTextureRect(currentFrame);
 	if (type != 50)
 	{
-		size = { 64.f, 64.f };
-		enemy.setOrigin(32.f, 32.f);
+		size = { 96.f, 96.f };
+		enemy.setOrigin(size.x/2,size.y/2);
 		enemy.setSize(size);
-		enemy.setFillColor(sf::Color::Green);
 
 		enemyHitBox.setSize(size);
 		isBoss = false;
@@ -19,6 +21,7 @@ Enemy::Enemy(char type, float posX, float posY, float wave)
 			exp = 2.f + wave * 2;
 			damage = MaxHp / 5;
 			this->type = 0;
+			enemyTexture.loadFromFile("Texture/Egg.png");
 		}
 		else
 		{
@@ -27,6 +30,7 @@ Enemy::Enemy(char type, float posX, float posY, float wave)
 			exp = 2.f + wave * 2;
 			damage = MaxHp / 5;
 			this->type = 1;
+			enemyTexture.loadFromFile("Texture/Chicken.png");
 		}
 	}
 	else
@@ -44,9 +48,15 @@ Enemy::Enemy(char type, float posX, float posY, float wave)
 		damage = MaxHp / 4;
 		isBoss = true;
 		this->type = rand() % 2;
+		if (this->type == 0)
+			enemyTexture.loadFromFile("Texture/Egg.png");
+		else
+			enemyTexture.loadFromFile("Texture/Chicken.png");
 	}
 
 	enemy.setPosition(posX, posY);
+	enemyHitBox.setOutlineThickness(1.f);
+	enemyHitBox.setOutlineColor(sf::Color::Green);
 	enemyHitBox.setFillColor(sf::Color::Transparent);
 	enemyHitBox.setOutlineThickness(1.f);
 	enemyHitBox.setOutlineColor(sf::Color::Blue);
@@ -54,7 +64,10 @@ Enemy::Enemy(char type, float posX, float posY, float wave)
 	enemySight.setFillColor(sf::Color::Transparent);
 	enemySight.setOutlineThickness(1.f);
 	enemySight.setOutlineColor(sf::Color::Red);
-	enemySight.setSize({ enemy.getSize().x * 12, enemy.getSize().y * 12 });
+
+	waveMultiply = (wave * 0.1) + 10;
+
+	enemySight.setSize({ enemy.getSize().x * waveMultiply, enemy.getSize().y * waveMultiply });
 	enemySight.setOrigin(enemySight.getLocalBounds().width / 2,
 		enemySight.getLocalBounds().height / 2);
 
@@ -64,17 +77,20 @@ Enemy::Enemy(char type, float posX, float posY, float wave)
 	randomX = randomAngle() / 1000;
 	randomY = randomAngle() / 1000;
 
-	timeBefore = randomTime(3,0);
-	timeAfter = randomTime(4,3);
+	timeBefore = randomTime(3, 0);
+	timeAfter = randomTime(4, 3);
 }
 
 void Enemy::timeTicking(float deltatime)
 {
 	attackTimer += deltatime;
 	movingTimer += deltatime;
+	animationTimer += deltatime;
+	if (isKilled)
+		deadTimer += deltatime;
 }
 
-void Enemy::movement(sf::Vector2f playerPos, sf::Vector2f playerHitBoxPos, sf::FloatRect playerBound)
+void Enemy::movement(sf::Vector2f playerPos, sf::Vector2f playerHitBoxPos, sf::FloatRect playerBound, bool isAlive)
 {
 	position = enemy.getPosition();
 	dir = playerPos - enemy.getPosition();
@@ -82,13 +98,19 @@ void Enemy::movement(sf::Vector2f playerPos, sf::Vector2f playerHitBoxPos, sf::F
 	enemyHitBox.setPosition(nextPos.left, nextPos.top);
 	enemySight.setPosition(position);
 
-	if (!knockingback)
+	if (!knockingBack && !isKilled)
 	{
 		//TAXIS MOVEMENT
-		if (enemySight.getGlobalBounds().intersects(playerBound))
+		if (enemySight.getGlobalBounds().intersects(playerBound) && isAlive)
 		{
 			enemy.move(movementSpeed * 2 * normalizedDir.x, movementSpeed * 2 * normalizedDir.y);
-			enemyHitBox.move(movementSpeed * normalizedDir.x * 25, movementSpeed * normalizedDir.y * 25);
+			enemyHitBox.move(movementSpeed * normalizedDir.x * 35, movementSpeed * normalizedDir.y * 35);
+			isMoving = true;
+			tracking = true;
+			if (normalizedDir.x >= 0)
+				dirState = 1;
+			else
+				dirState = 0;
 		}
 		//RANDOM MOVEMENT
 		else
@@ -96,17 +118,24 @@ void Enemy::movement(sf::Vector2f playerPos, sf::Vector2f playerHitBoxPos, sf::F
 			randomDir = { randomX, randomY };
 			if (movingTimer > timeBefore)
 			{
+				isMoving = true;
 				enemy.move(movementSpeed * randomDir.x, movementSpeed * randomDir.y);
-				enemyHitBox.move(movementSpeed * randomDir.x * 25, movementSpeed * randomDir.y * 25);
-				if (movingTimer >= timeAfter)
+				enemyHitBox.move(movementSpeed * randomDir.x * 35, movementSpeed * randomDir.y * 35);
+				tracking = false;
+				if (randomX >= 0)
+					dirState = 1;
+				else
+					dirState = 0;
+			}
+			else if (movingTimer >= timeAfter)
 				{
+					isMoving = false;
 					movingTimer = 0;
 					randomX = randomAngle() / 1000;
 					randomY = randomAngle() / 1000;
 					timeBefore = randomTime(3, 0);
 					timeAfter = randomTime(4, 3);
 				}
-			}
 		}
 	}
 	//MAP COLLISION
@@ -130,57 +159,45 @@ void Enemy::movement(sf::Vector2f playerPos, sf::Vector2f playerHitBoxPos, sf::F
 	normalizedKnockbackDir = knockbackDir / sqrt(knockbackDir.x * knockbackDir.x + knockbackDir.y * knockbackDir.y);
 }
 
-void Enemy::checkObstruct(sf::FloatRect thisPos, sf::FloatRect otherPos)
+void Enemy::checkObstruct(sf::FloatRect otherPos)
 {
-	nextPos = thisPos;
-	nextPos.left += 1.f;
-	nextPos.top += 1.f;
+	nextPos = enemy.getGlobalBounds();
 
 	if (nextPos.intersects(otherPos))
 	{
 		//right
-		if (thisPos.left < otherPos.left &&
-			thisPos.left + thisPos.width < otherPos.left + otherPos.width &&
-			thisPos.top + thisPos.height > otherPos.top &&
-			thisPos.top < otherPos.top + otherPos.height)
+		if (nextPos.left < otherPos.left &&
+			nextPos.left + nextPos.width < otherPos.left + otherPos.width &&
+			nextPos.top + nextPos.height > otherPos.top &&
+			nextPos.top < otherPos.top + otherPos.height)
 		{
 			enemy.setPosition(enemy.getPosition().x - 1.f, enemy.getPosition().y);
-			dir.x = 0;
 		}
 		//left
-		else if (thisPos.left > otherPos.left &&
-			thisPos.left + thisPos.width > otherPos.left + otherPos.width &&
-			thisPos.top + thisPos.height > otherPos.top &&
-			thisPos.top < otherPos.top + otherPos.height)
+		if (nextPos.left > otherPos.left &&
+			nextPos.left + nextPos.width > otherPos.left + otherPos.width &&
+			nextPos.top + nextPos.height > otherPos.top &&
+			nextPos.top < otherPos.top + otherPos.height)
 		{
 			enemy.setPosition(enemy.getPosition().x + 1.f, enemy.getPosition().y);
-			dir.x = 0;
 		}
 		//top
-		else if (thisPos.top > otherPos.top &&
-			thisPos.top + thisPos.height > otherPos.top + otherPos.height &&
-			thisPos.left + thisPos.width > otherPos.left &&
-			thisPos.left < otherPos.left + otherPos.width)
+		if (nextPos.top > otherPos.top &&
+			nextPos.top + nextPos.height > otherPos.top + otherPos.height &&
+			nextPos.left + nextPos.width > otherPos.left &&
+			nextPos.left < otherPos.left + otherPos.width)
 		{
 			enemy.setPosition(enemy.getPosition().x, enemy.getPosition().y + 1.f);
-			dir.y = 0;
 		}
 		//bottom
-		else if (thisPos.top < otherPos.top &&
-			thisPos.top + thisPos.height < otherPos.top + otherPos.height &&
-			thisPos.left + thisPos.width > otherPos.left &&
-			thisPos.left < otherPos.left + otherPos.width)
+		if (nextPos.top < otherPos.top &&
+			nextPos.top + nextPos.height < otherPos.top + otherPos.height &&
+			nextPos.left + nextPos.width > otherPos.left &&
+			nextPos.left < otherPos.left + otherPos.width)
 		{
 			enemy.setPosition(enemy.getPosition().x, enemy.getPosition().y - 1.f);
-			dir.y = 0;
 		}
 	}
-	else
-	{
-		dir.x = 1.f;
-		dir.y = 1.f;
-	}
-
 }
 
 void Enemy::attackCooldown()
@@ -200,6 +217,70 @@ void Enemy::attackCooldown()
 	}
 }
 
+void Enemy::animation()
+{
+	//RIGHT
+	if (dirState == 0 && !isKilled)
+	{
+		currentFrame.top = 16;
+		if (animationTimer >= 0.1f)
+		{
+			currentFrame.left += 16;
+			if (currentFrame.left >= 96 || !isMoving || knockingBack)
+				currentFrame.left = 0;
+
+			
+			enemy.setTextureRect(currentFrame);
+			animationTimer = 0;
+		}
+	}
+	//LEFT
+	else if (dirState == 1 && !isKilled)
+	{
+		currentFrame.top = 0;
+		if (animationTimer >= 0.1f)
+		{
+			currentFrame.left += 16;
+			if (currentFrame.left >= 96 || !isMoving || knockingBack)
+				currentFrame.left = 0;
+
+			enemy.setTextureRect(currentFrame);
+			animationTimer = 0;
+		}
+	}
+
+	//DEAD
+	if (dirState == 0 && isKilled)
+	{
+		currentFrame.top = 48;
+		if (deadTimer >= 0.15f)
+		{
+			if (currentFrame.left < 80)
+			{
+				currentFrame.left += 16;
+				deadTimer = 0;
+			}
+
+			enemy.setTextureRect(currentFrame);
+			
+		}
+	}
+	else if (dirState == 1 && isKilled)
+	{
+		currentFrame.top = 32;
+		if (deadTimer >= 0.15f)
+		{
+			if (currentFrame.left < 80)
+			{
+				currentFrame.left += 16;
+				deadTimer = 0;
+			}
+			enemy.setTextureRect(currentFrame);
+			
+		}
+	}
+}
+
 void Enemy::doDamage(int& playerHp)
 {
 	if (enableToAttack)
@@ -212,41 +293,63 @@ void Enemy::doDamage(int& playerHp)
 
 void Enemy::takeDamage(float damage, int weapon)
 {
-	if (!knockingback)
+	if (!knockingBack)
 	{
-		//EGG
-		if (type == 0)
+		//SWORD
+		if (weapon == 1)
 		{
-			if (weapon == 1)
-				currentHp -= damage / 2;
-			else if (weapon == 2)
-				currentHp -= damage * 1.5;
+			//EGG
+			if (type == 0)
+				currentHp -= damage / 1.5;
+			//CHICKEN
+			else if (type == 1)
+				currentHp -= damage;
+			hitBy = weapon;
 		}
-		//CHICKEN
+
+		//HAMMER
 		else
 		{
-			if (weapon == 1)
+			//EGG
+			if (type == 0)
 				currentHp -= damage;
-			else if (weapon == 2)
-				currentHp -= damage;
+			//CHICKEN
+			else if (type == 1)
+				currentHp -= damage / 1.5;
+			hitBy = weapon;
 		}
 	}
 }
 
 void Enemy::knockBackUpdate()
 {
-	if (knockingback)
+	if (knockingBack)
 	{
+		if (hitBy == 1)
+			knockBackRate = 0.1;
+		else
+			knockBackRate = 0.05;
 		if (knockbackspeed > 0)
 		{
 			enemy.move(knockbackspeed * -normalizedKnockbackDir.x, knockbackspeed * -normalizedKnockbackDir.y);
-			knockbackspeed -= 0.1;
+			knockbackspeed -= knockBackRate;
 		}
 		else
 		{
-			knockbackspeed = 5;
-			knockingback = false;
+			if (isMoving)
+				knockbackspeed = 5;
+			knockingBack = false;
 		}
+	}
+}
+
+void Enemy::deadUpdate()
+{
+	std::cout << deadTimer << std::endl;
+	if (isKilled)
+	{
+		if (deadTimer >= 2.f)
+			isDead = true;
 	}
 }
 
@@ -255,6 +358,8 @@ void Enemy::update()
 	position = getPos();
 	attackCooldown();
 	knockBackUpdate();
+	deadUpdate();
+	animation();
 }
 
 void Enemy::render(sf::RenderTarget& other)

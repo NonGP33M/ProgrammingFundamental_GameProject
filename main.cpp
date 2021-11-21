@@ -9,6 +9,7 @@ int main()
 	sf::View view(sf::Vector2f(0.0f, 0.0f), ScreenSize);
 	sf::Event event;
 	sf::Clock clock;
+	std::vector<sf::Event> keyInput;
 	window.setFramerateLimit(144.f);
 
 	Game game(&window, view);
@@ -17,6 +18,7 @@ int main()
 	bool onScreen = true;
 	while (window.isOpen())
 	{
+		keyInput.clear();
 		float deltatime = clock.restart().asSeconds();
 		int state = menu.getStates();
 		while (window.pollEvent(event))
@@ -34,6 +36,9 @@ int main()
 			case sf::Event::LostFocus:
 				onScreen = false;
 				break;
+			case sf::Event::TextEntered:
+				keyInput.push_back(event);
+				break;
 			}
 		}
 
@@ -49,13 +54,13 @@ int main()
 			if (state == NAME)
 			{
 				menu.timeTicking(deltatime);
-				menu.nameUpdate(event);
+				menu.nameUpdate(keyInput);
 				menu.mainMenuRenderComponent();
 				menu.nameRender();
 				if (menu.startCheck())
 				{
-					menu.started();
 					game.gameReset();
+					menu.started();
 				}
 			}
 			if (state == PLAY)
