@@ -15,8 +15,6 @@ GUI::GUI()
 	enemyHp.setFont(font);
 	enemyHp.setFillColor(sf::Color::White);
 	enemyHp.setCharacterSize(16);
-	enemyHp.setOutlineThickness(1.f);
-	enemyHp.setOutlineColor(sf::Color::Black);
 
 	currentPlayerHp.setFont(font);
 	currentPlayerHp.setFillColor(sf::Color::Black);
@@ -146,15 +144,15 @@ void GUI::screenUI(sf::Vector2f pos, float currentEXP, float maxEXP, int wave,
 		weaponFrame_2.setTextureRect(secondFrame);
 		if (!enableToAttack || isKnockingBack)
 		{
-			weaponFrame_1.setFillColor(sf::Color(128.f, 128.f, 128.f, 255.f));
-			weaponFrame_2.setFillColor(sf::Color(128.f, 128.f, 128.f, 255.f));
+			weaponFrame_1.setFillColor(sf::Color(128.f, 128.f, 128.f, 204.f));
+			weaponFrame_2.setFillColor(sf::Color(128.f, 128.f, 128.f, 204.f));
 			weaponIcon_1.setFillColor(sf::Color(128.f, 128.f, 128.f, 255.f));
 			weaponIcon_2.setFillColor(sf::Color(128.f, 128.f, 128.f, 255.f));
 		}
 		else
 		{
-			weaponFrame_1.setFillColor(sf::Color(255.f,255.f,255.f, 255.f));
-			weaponFrame_2.setFillColor(sf::Color(128.f, 128.f, 128.f, 255.f));
+			weaponFrame_1.setFillColor(sf::Color(255.f,255.f,255.f, 204.f));
+			weaponFrame_2.setFillColor(sf::Color(128.f, 128.f, 128.f, 204.f));
 			weaponIcon_1.setFillColor(sf::Color(255.f, 255.f, 255.f, 255.f));
 			weaponIcon_2.setFillColor(sf::Color(128.f, 128.f, 128.f, 255.f));
 		}

@@ -228,8 +228,8 @@ void Game::waveUpdate()
 		for (size_t i = 0; i < 8; i++)
 		{
 			enemyType = spawner[i];
-			enemies.push_back(new Enemy(enemyType, rand() % 1440 + 1,
-				rand() % 900 + 1, wave));
+			enemies.push_back(new Enemy(enemyType, rand() % 2000 - 300 ,
+				rand() % 2300 - 700, wave));
 			enemyLeft++;
 		}
 		duringWave = true;

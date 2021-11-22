@@ -15,9 +15,15 @@ private:
 	sf::Vector2f buttonSize = { 350.f, 80.f };
 
 	sf::RectangleShape greyScreen;
+	sf::Texture buttonTexture;
+	sf::Texture mediumButtonTexture;
+	sf::Texture smallButtonTexture;
+	sf::Texture shortButtonTexture;
+	sf::Texture backgroundTexture;
 
 	//MAIN_MENU
 	sf::Text title;
+	sf::Text myName;
 	sf::Text playButtonText;
 	sf::Text leaderBoardButtonText;
 	sf::Text exitButtonText;
@@ -34,10 +40,12 @@ private:
 	sf::RectangleShape mainMenuButton;
 
 	//LEADERBOARD_MENU
+	sf::Texture frameTexture;
 	sf::Text leaderBoardTitle;
 	sf::Text backButtonText;
 	sf::RectangleShape frame;
 	sf::RectangleShape backButton;
+	sf::RectangleShape leaderboardBackground;
 	sf::Text showingName[5];
 	sf::Text showingScore[5];
 
@@ -47,10 +55,13 @@ private:
 	sf::RectangleShape tryAgainButton;
 
 	//NAME_MENU
+	sf::Texture nameFrameTexture;
 	sf::RectangleShape nameFrame;
 	sf::RectangleShape nameFill;
 	sf::RectangleShape confirmButton;
+	sf::RectangleShape backButton_2;
 	sf::Text confirmButtonText;
+	sf::Text backButtonText_2;
 	sf::Text name;
 	sf::Text cursor;
 	

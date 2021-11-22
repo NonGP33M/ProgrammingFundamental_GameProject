@@ -38,7 +38,7 @@ Enemy::Enemy(char type, float posX, float posY, float wave)
 		size = { 128.f, 128.f };
 		enemy.setOrigin(64.f, 64.f);
 		enemy.setSize(size);
-		enemy.setFillColor(sf::Color::Red);
+		enemy.setFillColor(sf::Color(204.f,204.f,204.f,255.f));
 
 		enemyHitBox.setSize(size);
 
@@ -116,7 +116,7 @@ void Enemy::movement(sf::Vector2f playerPos, sf::Vector2f playerHitBoxPos, sf::F
 		else
 		{
 			randomDir = { randomX, randomY };
-			if (movingTimer > timeBefore)
+			if (movingTimer > timeBefore && movingTimer < timeAfter)
 			{
 				isMoving = true;
 				enemy.move(movementSpeed * randomDir.x, movementSpeed * randomDir.y);
@@ -129,6 +129,7 @@ void Enemy::movement(sf::Vector2f playerPos, sf::Vector2f playerHitBoxPos, sf::F
 			}
 			else if (movingTimer >= timeAfter)
 				{
+					std::cout << "???" << std::endl;
 					isMoving = false;
 					movingTimer = 0;
 					randomX = randomAngle() / 1000;
@@ -345,7 +346,6 @@ void Enemy::knockBackUpdate()
 
 void Enemy::deadUpdate()
 {
-	std::cout << deadTimer << std::endl;
 	if (isKilled)
 	{
 		if (deadTimer >= 2.f)
@@ -365,6 +365,6 @@ void Enemy::update()
 void Enemy::render(sf::RenderTarget& other)
 {
 	other.draw(enemy);
-	other.draw(enemyHitBox);
-	other.draw(enemySight);
+	//other.draw(enemyHitBox);
+	//other.draw(enemySight);
 }

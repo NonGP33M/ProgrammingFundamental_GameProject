@@ -433,7 +433,7 @@ void Player::update()
 void Player::render(sf::RenderTarget& other)
 {
 	other.draw(playerSprite);
-	other.draw(playerHitBox);
+	//other.draw(playerHitBox);
 }
 
 void Player::reset()

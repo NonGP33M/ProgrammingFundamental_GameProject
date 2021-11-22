@@ -3,82 +3,94 @@
 Menu::Menu(sf::RenderWindow* window, sf::View view)
 {
 	font.loadFromFile("Font/Notalot60.ttf");
+	buttonTexture.loadFromFile("Texture/Button.png");
+	mediumButtonTexture.loadFromFile("Texture/Button_2.png");
+	shortButtonTexture.loadFromFile("Texture/Button_3.png");
+	nameFrameTexture.loadFromFile("Texture/NameFrame.png");
+	frameTexture.loadFromFile("Texture/Leaderboard.png");
+	backgroundTexture.loadFromFile("Texture/MainBackground.png");
 
 	buttonTextSize = 30;
 
 	greyScreen.setSize({ 1440.f, 900.f });
-	greyScreen.setFillColor(sf::Color(0.f, 0.f, 0.f, 204.f));
+	greyScreen.setFillColor(sf::Color(0.f, 0.f, 0.f, 153.f));
 	greyScreen.setOrigin(greyScreen.getSize().x / 2,
 		greyScreen.getSize().y / 2);
 
 	//MAIN_MENU
 	title.setFont(font);
-	title.setCharacterSize(128);
-	title.setString("UNTITLED TITLE");
+	title.setCharacterSize(240);
+	title.setString("MOOYIMM");
 	title.setFillColor(sf::Color::White);
+	title.setOutlineThickness(5.f);
 	title.setOrigin(title.getLocalBounds().width / 2,
 		title.getLocalBounds().height);
+
+	myName.setFont(font);
+	myName.setCharacterSize(20);
+	myName.setString("64010683  Phumrapee  Sinkeeree");
+	myName.setFillColor(sf::Color::White);
+	myName.setOrigin(myName.getLocalBounds().width / 2,
+		myName.getLocalBounds().height);
+
+	mainBackground.setSize({ 1440.f, 900.f });
+	mainBackground.setTexture(&backgroundTexture);
+	mainBackground.setOrigin(mainBackground.getLocalBounds().width / 2,
+		mainBackground.getLocalBounds().height / 2);
 
 	playButtonText.setFont(font);
 	playButtonText.setCharacterSize(buttonTextSize);
 	playButtonText.setString("PLAY");
-	playButtonText.setFillColor(sf::Color::White);
+	playButtonText.setFillColor(sf::Color(140.f, 100.f, 54.f, 255.f));
 
 	leaderBoardButtonText.setFont(font);
 	leaderBoardButtonText.setCharacterSize(buttonTextSize);
 	leaderBoardButtonText.setString("LEADERBOARD");
-	leaderBoardButtonText.setFillColor(sf::Color::White);
+	leaderBoardButtonText.setFillColor(sf::Color(140.f, 100.f, 54.f, 255.f));
 
 	exitButtonText.setFont(font);
 	exitButtonText.setCharacterSize(buttonTextSize);
 	exitButtonText.setString("EXIT");
-	exitButtonText.setFillColor(sf::Color::White);
+	exitButtonText.setFillColor(sf::Color(140.f, 100.f, 54.f, 255.f));
 
 	playButton.setSize(buttonSize);
-	playButton.setFillColor(sf::Color::Transparent);
-	playButton.setOutlineColor(sf::Color::White);
-	playButton.setOutlineThickness(1.f);
+	playButton.setTexture(&buttonTexture);
 	playButton.setOrigin(playButton.getLocalBounds().width / 2,
 		playButton.getLocalBounds().height / 2);
 
 	leaderBoardButton.setSize(buttonSize);
-	leaderBoardButton.setFillColor(sf::Color::Transparent);
-	leaderBoardButton.setOutlineColor(sf::Color::White);
-	leaderBoardButton.setOutlineThickness(1.f);
+	leaderBoardButton.setTexture(&buttonTexture);
 	leaderBoardButton.setOrigin(leaderBoardButton.getLocalBounds().width / 2,
 		leaderBoardButton.getLocalBounds().height / 2);
 
 	exitButton.setSize(buttonSize);
-	exitButton.setFillColor(sf::Color::Transparent);
-	exitButton.setOutlineColor(sf::Color::White);
-	exitButton.setOutlineThickness(1.f);
+	exitButton.setTexture(&buttonTexture);
 	exitButton.setOrigin(exitButton.getLocalBounds().width / 2,
 		exitButton.getLocalBounds().height / 2);
 
 	//LEADERBOARD_MENU
 	leaderBoardTitle.setFont(font);
-	leaderBoardTitle.setCharacterSize(60);
+	leaderBoardTitle.setCharacterSize(90);
 	leaderBoardTitle.setString("LEADERBOARD");
 	leaderBoardTitle.setFillColor(sf::Color::White);
 	leaderBoardTitle.setOrigin(leaderBoardTitle.getLocalBounds().width / 2,
 		leaderBoardTitle.getLocalBounds().height / 2);
 
+	leaderboardBackground.setSize({ 1440.f,900.f });
+	leaderboardBackground.setTexture(&backgroundTexture);
+
+	frame.setTexture(&frameTexture);
 	frame.setSize({ 800.f, 400.f });
-	frame.setFillColor(sf::Color::Transparent);
-	frame.setOutlineColor(sf::Color::White);
-	frame.setOutlineThickness(1.f);
 	frame.setOrigin(frame.getLocalBounds().width / 2,
 		frame.getLocalBounds().top);
 
 	backButtonText.setFont(font);
 	backButtonText.setCharacterSize(buttonTextSize);
 	backButtonText.setString("Back");
-	backButtonText.setFillColor(sf::Color::White);
-
+	backButtonText.setFillColor(sf::Color(140.f, 100.f, 54.f, 255.f));
+	
+	backButton.setTexture(&shortButtonTexture);
 	backButton.setSize({ 150.f, 75.f });
-	backButton.setFillColor(sf::Color::Transparent);
-	backButton.setOutlineColor(sf::Color::White);
-	backButton.setOutlineThickness(1.f);
 	backButton.setOrigin(backButton.getLocalBounds().width / 2,
 		backButton.getLocalBounds().height / 2);
 
@@ -86,24 +98,20 @@ Menu::Menu(sf::RenderWindow* window, sf::View view)
 	resumeButtonText.setFont(font);
 	resumeButtonText.setCharacterSize(buttonTextSize);
 	resumeButtonText.setString("Resume");
-	resumeButtonText.setFillColor(sf::Color::White);
+	resumeButtonText.setFillColor(sf::Color(140.f, 100.f, 54.f, 255.f));
 
 	mainMenuButtonText.setFont(font);
 	mainMenuButtonText.setCharacterSize(buttonTextSize);
 	mainMenuButtonText.setString("Main menu");
-	mainMenuButtonText.setFillColor(sf::Color::White);
+	mainMenuButtonText.setFillColor(sf::Color(140.f, 100.f, 54.f, 255.f));
 
 	resumeButton.setSize(buttonSize);
-	resumeButton.setFillColor(sf::Color::Transparent);
-	resumeButton.setOutlineColor(sf::Color::White);
-	resumeButton.setOutlineThickness(1.f);
+	resumeButton.setTexture(&buttonTexture);
 	resumeButton.setOrigin(resumeButton.getLocalBounds().width / 2,
 		resumeButton.getLocalBounds().height / 2);
 
 	mainMenuButton.setSize(buttonSize);
-	mainMenuButton.setFillColor(sf::Color::Transparent);
-	mainMenuButton.setOutlineColor(sf::Color::White);
-	mainMenuButton.setOutlineThickness(1.f);
+	mainMenuButton.setTexture(&buttonTexture);
 	mainMenuButton.setOrigin(mainMenuButton.getLocalBounds().width / 2,
 		mainMenuButton.getLocalBounds().height / 2);
 
@@ -120,40 +128,36 @@ Menu::Menu(sf::RenderWindow* window, sf::View view)
 	tryAgainButtonText.setFont(font);
 	tryAgainButtonText.setCharacterSize(buttonTextSize);
 	tryAgainButtonText.setString("Try again");
-	tryAgainButtonText.setFillColor(sf::Color::White);
+	tryAgainButtonText.setFillColor(sf::Color(140.f, 100.f, 54.f, 255.f));
 
 
 	tryAgainButton.setSize(buttonSize);
-	tryAgainButton.setFillColor(sf::Color::Transparent);
-	tryAgainButton.setOutlineColor(sf::Color::White);
-	tryAgainButton.setOutlineThickness(1.f);
+	tryAgainButton.setTexture(&buttonTexture);
 	tryAgainButton.setOrigin(tryAgainButton.getLocalBounds().width / 2,
 		tryAgainButton.getLocalBounds().height / 2);
 
 	//NAME
 	nameFrame.setSize({ 800.f, 250.f });
-	nameFrame.setFillColor(sf::Color::Transparent);
-	nameFrame.setOutlineColor(sf::Color::White);
-	nameFrame.setOutlineThickness(1.f);
 	nameFrame.setOrigin(nameFrame.getLocalBounds().width / 2,
 		nameFrame.getLocalBounds().height / 2);
-
-	nameFill.setSize({ 700.f, 75.f });
-	nameFill.setFillColor(sf::Color::Transparent);
-	nameFill.setOutlineColor(sf::Color::White);
-	nameFill.setOutlineThickness(1.f);
-	nameFill.setOrigin(nameFill.getLocalBounds().width / 2,
-		nameFill.getLocalBounds().height / 2);
+	nameFrame.setTexture(&nameFrameTexture);
 
 	confirmButton.setSize({ 275.f, 75.f });
-	confirmButton.setFillColor(sf::Color::Transparent);
-	confirmButton.setOutlineColor(sf::Color::White);
-	confirmButton.setOutlineThickness(1.f);
+	confirmButton.setTexture(&mediumButtonTexture);
 
 	confirmButtonText.setFont(font);
 	confirmButtonText.setCharacterSize(buttonTextSize);
 	confirmButtonText.setString("Confirm");
 	confirmButtonText.setFillColor(sf::Color::White);
+
+	backButtonText_2.setFont(font);
+	backButtonText_2.setCharacterSize(buttonTextSize);
+	backButtonText_2.setString("Back");
+	backButtonText_2.setFillColor(sf::Color(140.f, 100.f, 54.f, 255.f));
+
+	backButton_2.setSize({ 275.f, 75.f });
+	backButton_2.setTexture(&mediumButtonTexture);
+	
 
 	name.setFont(font);
 	name.setCharacterSize(buttonTextSize);
@@ -241,7 +245,9 @@ void Menu::mainMenuUpdate()
 	exitButtonText.setOrigin(exitButtonText.getLocalBounds().width / 2,
 		exitButtonText.getLocalBounds().height - 8);
 
-	title.setPosition(view.getCenter().x, view.getCenter().y - 200);
+	mainBackground.setPosition(view.getCenter());
+	title.setPosition(view.getCenter().x, view.getCenter().y - 50);
+	myName.setPosition(view.getCenter().x + 550, view.getCenter().y + 440);
 
 	playButton.setPosition(view.getCenter().x, view.getCenter().y + 100);
 	leaderBoardButton.setPosition(view.getCenter().x, view.getCenter().y + 200);
@@ -259,13 +265,17 @@ void Menu::mainMenuRender()
 	window->clear();
 	window->setView(view);
 
+	window->draw(mainBackground);
 	window->draw(title);
-	window->draw(playButtonText);
-	window->draw(leaderBoardButtonText);
-	window->draw(exitButtonText);
+	window->draw(myName);
+	
 	window->draw(playButton);
 	window->draw(leaderBoardButton);
 	window->draw(exitButton);
+
+	window->draw(playButtonText);
+	window->draw(leaderBoardButtonText);
+	window->draw(exitButtonText);
 
 	window->display();
 }
@@ -296,10 +306,14 @@ void Menu::leaderBoardMenuUpdate()
 		backButton.setScale(1.f, 1.f);
 	}
 
+	leaderboardBackground.setOrigin(leaderboardBackground.getLocalBounds().width / 2,
+		leaderboardBackground.getLocalBounds().height / 2);
+	leaderboardBackground.setPosition(view.getCenter());
+
 	backButtonText.setOrigin(backButtonText.getLocalBounds().width / 2,
 		backButtonText.getLocalBounds().height - 8);
 
-	backButton.setPosition(view.getCenter().x, view.getCenter().y + 200);
+	backButton.setPosition(view.getCenter().x, view.getCenter().y + 250);
 	backButtonText.setPosition(backButton.getPosition());
 
 	score.readFile();
@@ -308,10 +322,12 @@ void Menu::leaderBoardMenuUpdate()
 		showingName[i].setFont(font);
 		showingName[i].setCharacterSize(36);
 		showingName[i].setString(score.getName()[i].second);
+		showingName[i].setFillColor(sf::Color(140.f, 100.f, 54.f, 255.f));
 
 		showingScore[i].setFont(font);
 		showingScore[i].setCharacterSize(36);
 		showingScore[i].setString(std::to_string(score.getName()[i].first));
+		showingScore[i].setFillColor(sf::Color(140.f, 100.f, 54.f, 255.f));
 
 		showingName[i].setPosition(view.getCenter().x - 300, view.getCenter().y - 180 + i * 50);
 		showingScore[i].setPosition(view.getCenter().x + 200, view.getCenter().y - 180 + i * 50);
@@ -325,6 +341,7 @@ void Menu::leaderBoardMenuRender()
 
 	window->setView(view);
 
+	window->draw(leaderboardBackground);
 	window->draw(leaderBoardTitle);
 	window->draw(frame);
 	window->draw(backButton);
@@ -399,10 +416,11 @@ void Menu::pauseMenuRender()
 	window->setView(view);
 
 	window->draw(greyScreen);
-	window->draw(mainMenuButtonText);
-	window->draw(resumeButtonText);
 	window->draw(resumeButton);
 	window->draw(mainMenuButton);
+	window->draw(mainMenuButtonText);
+	window->draw(resumeButtonText);
+	
 
 	window->display();
 }
@@ -472,10 +490,11 @@ void Menu::gameOverMenuRender()
 
 	window->draw(greyScreen);
 	window->draw(gameOverTitle);
-	window->draw(tryAgainButtonText);
 	window->draw(tryAgainButton);
-	window->draw(mainMenuButtonText);
 	window->draw(mainMenuButton);
+	window->draw(tryAgainButtonText);
+	window->draw(mainMenuButtonText);
+	
 
 	window->display();
 }
@@ -488,7 +507,7 @@ void Menu::nameUpdate(std::vector<sf::Event> events)
 	if (confirmButton.getGlobalBounds().contains(screenPos) && 
 		enteredName != "")
 	{
-		confirmButtonText.setFillColor(sf::Color::White);
+		confirmButtonText.setFillColor(sf::Color(140.f, 100.f, 54.f, 255.f));
 		confirmButtonText.setCharacterSize(buttonTextSize * 1.5);
 		confirmButton.setScale(1.2f, 1.2f);
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left) &&
@@ -504,16 +523,16 @@ void Menu::nameUpdate(std::vector<sf::Event> events)
 		if (enteredName == "")
 			confirmButtonText.setFillColor(sf::Color( 128.f, 128.f, 128.f, 255.f ));
 		else
-			confirmButtonText.setFillColor(sf::Color::White);
+			confirmButtonText.setFillColor(sf::Color(140.f, 100.f, 54.f, 255.f));
 
 			confirmButtonText.setCharacterSize(buttonTextSize);
 			confirmButton.setScale(1.f, 1.f);
 	}
 
-	if (backButton.getGlobalBounds().contains(screenPos))
+	if (backButton_2.getGlobalBounds().contains(screenPos))
 	{
-		backButtonText.setCharacterSize(buttonTextSize * 1.5);
-		backButton.setScale(1.2f, 1.2f);
+		backButtonText_2.setCharacterSize(buttonTextSize * 1.5);
+		backButton_2.setScale(1.2f, 1.2f);
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left) &&
 			transitionDebounce >= 0.3f)
 		{
@@ -523,8 +542,8 @@ void Menu::nameUpdate(std::vector<sf::Event> events)
 	}
 	else
 	{
-		backButtonText.setCharacterSize(buttonTextSize);
-		backButton.setScale(1.f, 1.f);
+		backButtonText_2.setCharacterSize(buttonTextSize);
+		backButton_2.setScale(1.f, 1.f);
 	}
 
 	//NAME TYPING
@@ -545,38 +564,40 @@ void Menu::nameUpdate(std::vector<sf::Event> events)
 				events[i].text.unicode != 8 && (events[i].text.unicode < 48 ||
 					events[i].text.unicode > 57))
 			{
-				name.setFillColor(sf::Color::White);
+				name.setFillColor(sf::Color(140.f, 100.f, 54.f, 255.f));
 				enteredName += static_cast<char>(events[i].text.unicode);
 			}
 		}
 	}
 	if (enteredName == "")
 	{
-		name.setFillColor(sf::Color(128.f, 128.f, 128.f, 255.f));
-		cursor.setFillColor(sf::Color(255, 255, 255, 0));
+		name.setFillColor(sf::Color(140.f, 100.f, 54.f, 255.f));
+		cursor.setFillColor(sf::Color::Transparent);
 		name.setString("ENTER  YOUR  NAME");
 	}
 	else if (cursorBlinking < 0.75f &&
 		enteredName.length() < 8)
 	{
 		name.setString(enteredName);
-		cursor.setFillColor(sf::Color(255, 255, 255, 255));
+		cursor.setFillColor(sf::Color(140.f, 100.f, 54.f, 255.f));
 	}
 	else if (cursorBlinking >= 0.75f &&
 		enteredName.length() < 15)
 	{
 		name.setString(enteredName);
-		cursor.setFillColor(sf::Color(255, 255, 255, 0));
+		cursor.setFillColor(sf::Color(140.f, 100.f, 54.f, 255.f));
 	}
 	if (cursorBlinking >= 1.5f)
 		cursorBlinking = 0;
 
 
-	backButton.setSize({ 275.f, 75.f });
-	backButton.setOrigin(backButton.getLocalBounds().width / 2,
-		backButton.getLocalBounds().height / 2);
-	backButtonText.setOrigin(backButtonText.getLocalBounds().width / 2,
-		backButtonText.getLocalBounds().height - 8);
+	backButton_2.setSize({ 275.f, 75.f });
+	backButton_2.setOrigin(backButton_2.getLocalBounds().width / 2,
+		backButton_2.getLocalBounds().height / 2);
+
+	backButtonText_2.setOrigin(backButtonText_2.getLocalBounds().width / 2,
+		backButtonText_2.getLocalBounds().height - 8);
+	
 
 	confirmButton.setOrigin(confirmButton.getLocalBounds().width / 2,
 		confirmButton.getLocalBounds().height / 2);
@@ -589,10 +610,9 @@ void Menu::nameUpdate(std::vector<sf::Event> events)
 	cursor.setPosition(view.getCenter().x + name.getLocalBounds().width/2, view.getCenter().y - 70);
 
 	nameFrame.setPosition(view.getCenter());
-	nameFill.setPosition(view.getCenter().x, view.getCenter().y - 50);
-	confirmButton.setPosition(view.getCenter().x - 160, view.getCenter().y + 60);
-	backButton.setPosition(view.getCenter().x + 160, view.getCenter().y + 60);
-	backButtonText.setPosition(backButton.getPosition());
+	confirmButton.setPosition(view.getCenter().x - 160, view.getCenter().y + 50);
+	backButton_2.setPosition(view.getCenter().x + 160, view.getCenter().y + 50);
+	backButtonText_2.setPosition(backButton_2.getPosition());
 	confirmButtonText.setPosition(confirmButton.getPosition());
 }
 
@@ -602,12 +622,11 @@ void Menu::nameRender()
 
 	window->draw(greyScreen);
 	window->draw(nameFrame);
-	window->draw(nameFill);
 
 	window->draw(confirmButton);
 	window->draw(confirmButtonText);
-	window->draw(backButton);
-	window->draw(backButtonText);
+	window->draw(backButton_2);
+	window->draw(backButtonText_2);
 
 	window->draw(name);
 	window->draw(cursor);
@@ -620,11 +639,15 @@ void Menu::mainMenuRenderComponent()
 	window->clear();
 	window->setView(view);
 
+	window->draw(mainBackground);
+	window->draw(myName);
 	window->draw(title);
-	window->draw(playButtonText);
-	window->draw(leaderBoardButtonText);
-	window->draw(exitButtonText);
+
 	window->draw(playButton);
 	window->draw(leaderBoardButton);
 	window->draw(exitButton);
+
+	window->draw(playButtonText);
+	window->draw(leaderBoardButtonText);
+	window->draw(exitButtonText);
 }

@@ -53,5 +53,5 @@ void WeaponHitbox::setHitbox(float posX, float posY, int type, int state, bool i
 
 void WeaponHitbox::render(sf::RenderTarget& other)
 {
-	other.draw(Hitbox);
+	//other.draw(Hitbox);
 }
