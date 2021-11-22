@@ -168,7 +168,7 @@ void Game::playerAttack()
 			if (enemies[i]->deadCheck())
 			{
 				//DROP
-				if (enemies[i]->bossCheck() || rand() % 10 < 1)
+				if (enemies[i]->bossCheck() || rand() % 100 < 15)
 					drop.push_back(new ItemDrop(wave, enemies[i]->getDamage(),
 						false, enemies[i]->getPos()));
 				exp += enemies[i]->getEXP();

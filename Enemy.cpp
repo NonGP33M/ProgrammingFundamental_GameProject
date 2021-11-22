@@ -81,14 +81,6 @@ Enemy::Enemy(char type, float posX, float posY, float wave)
 	timeAfter = randomTime(4, 3);
 }
 
-void Enemy::timeTicking(float deltatime)
-{
-	attackTimer += deltatime;
-	movingTimer += deltatime;
-	animationTimer += deltatime;
-	if (isKilled)
-		deadTimer += deltatime;
-}
 
 void Enemy::movement(sf::Vector2f playerPos, sf::Vector2f playerHitBoxPos, sf::FloatRect playerBound, bool isAlive)
 {
@@ -129,7 +121,6 @@ void Enemy::movement(sf::Vector2f playerPos, sf::Vector2f playerHitBoxPos, sf::F
 			}
 			else if (movingTimer >= timeAfter)
 				{
-					std::cout << "???" << std::endl;
 					isMoving = false;
 					movingTimer = 0;
 					randomX = randomAngle() / 1000;
