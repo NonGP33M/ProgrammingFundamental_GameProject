@@ -5,13 +5,15 @@ int main()
 {
 	srand(time(NULL));
 	sf::Vector2f ScreenSize = { 1440.f,900.f };
-	sf::RenderWindow window(sf::VideoMode(ScreenSize.x, ScreenSize.y), "Game", sf::Style::Close);
+	sf::RenderWindow window(sf::VideoMode(ScreenSize.x, ScreenSize.y), "MOOYIMM", sf::Style::Close);
 	sf::View view(sf::Vector2f(0.0f, 0.0f), ScreenSize);
 	sf::Event event;
 	sf::Clock clock;
 	std::vector<sf::Event> keyInput;
+	sf::Image icon;
 	window.setFramerateLimit(144.f);
-
+	icon.loadFromFile("Texture/Icon/Icon.png");
+	window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
 	Game game(&window, view);
 	Menu menu(&window, view);
 
