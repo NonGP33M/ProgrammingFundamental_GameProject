@@ -108,6 +108,13 @@ int main()
 					menu.tryAgain();
 				}
 			}
+			if (state == HELP)
+			{
+				menu.timeTicking(deltatime);
+				menu.helpUpdate();
+				menu.mainMenuRenderComponent();
+				menu.helpRender();
+			}
 		}
 	}
 	return 0;

@@ -3,7 +3,7 @@
 #include "Game.h"
 #include "Score.h"
 
-enum STATE { MENU, PLAY, PAUSE, LEADERBOARD, GAMEOVER, NAME};
+enum STATE { MENU, PLAY, PAUSE, LEADERBOARD, GAMEOVER, NAME, HELP};
 
 class Menu
 {
@@ -20,6 +20,7 @@ private:
 	sf::Texture smallButtonTexture;
 	sf::Texture shortButtonTexture;
 	sf::Texture backgroundTexture;
+	sf::Texture helpTexture;
 
 	//MAIN_MENU
 	sf::Text title;
@@ -27,11 +28,13 @@ private:
 	sf::Text playButtonText;
 	sf::Text leaderBoardButtonText;
 	sf::Text exitButtonText;
+	sf::Text helpButtonText;
 	sf::RenderWindow* window;
 	sf::RectangleShape playButton;
 	sf::RectangleShape leaderBoardButton;
 	sf::RectangleShape exitButton;
 	sf::RectangleShape mainBackground;
+	sf::RectangleShape helpButton;
 
 	//PAUSE_MENU
 	sf::Text resumeButtonText;
@@ -64,8 +67,12 @@ private:
 	sf::Text backButtonText_2;
 	sf::Text name;
 	sf::Text cursor;
-	
 	std::string enteredName;
+	
+	//HELP
+	sf::RectangleShape helpFrame;
+
+	
 	int buttonTextSize;
 	
 	bool tryAgainClick = false;
@@ -100,6 +107,8 @@ public:
 	void gameOverMenuRender();
 	void nameUpdate(std::vector<sf::Event> event);
 	void nameRender();
+	void helpUpdate();
+	void helpRender();
 	void mainMenuRenderComponent();
 };
 

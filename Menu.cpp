@@ -6,9 +6,11 @@ Menu::Menu(sf::RenderWindow* window, sf::View view)
 	buttonTexture.loadFromFile("Texture/Button.png");
 	mediumButtonTexture.loadFromFile("Texture/Button_2.png");
 	shortButtonTexture.loadFromFile("Texture/Button_3.png");
+	smallButtonTexture.loadFromFile("Texture/Button_4.png");
 	nameFrameTexture.loadFromFile("Texture/NameFrame.png");
 	frameTexture.loadFromFile("Texture/Leaderboard.png");
 	backgroundTexture.loadFromFile("Texture/MainBackground.png");
+	helpTexture.loadFromFile("Texture/Info.png");
 
 	buttonTextSize = 30;
 
@@ -53,6 +55,11 @@ Menu::Menu(sf::RenderWindow* window, sf::View view)
 	exitButtonText.setString("EXIT");
 	exitButtonText.setFillColor(sf::Color(140.f, 100.f, 54.f, 255.f));
 
+	helpButtonText.setFont(font);
+	helpButtonText.setCharacterSize(36);
+	helpButtonText.setString("?");
+	helpButtonText.setFillColor(sf::Color(140.f, 100.f, 54.f, 255.f));
+
 	playButton.setSize(buttonSize);
 	playButton.setTexture(&buttonTexture);
 	playButton.setOrigin(playButton.getLocalBounds().width / 2,
@@ -67,6 +74,11 @@ Menu::Menu(sf::RenderWindow* window, sf::View view)
 	exitButton.setTexture(&buttonTexture);
 	exitButton.setOrigin(exitButton.getLocalBounds().width / 2,
 		exitButton.getLocalBounds().height / 2);
+
+	helpButton.setSize({ 80.f,80.f });
+	helpButton.setTexture(&smallButtonTexture);
+	helpButton.setOrigin(helpButton.getLocalBounds().width / 2,
+		helpButton.getLocalBounds().height / 2);
 
 	//LEADERBOARD_MENU
 	leaderBoardTitle.setFont(font);
@@ -88,7 +100,7 @@ Menu::Menu(sf::RenderWindow* window, sf::View view)
 	backButtonText.setCharacterSize(buttonTextSize);
 	backButtonText.setString("Back");
 	backButtonText.setFillColor(sf::Color(140.f, 100.f, 54.f, 255.f));
-	
+
 	backButton.setTexture(&shortButtonTexture);
 	backButton.setSize({ 150.f, 75.f });
 	backButton.setOrigin(backButton.getLocalBounds().width / 2,
@@ -157,7 +169,7 @@ Menu::Menu(sf::RenderWindow* window, sf::View view)
 
 	backButton_2.setSize({ 275.f, 75.f });
 	backButton_2.setTexture(&mediumButtonTexture);
-	
+
 
 	name.setFont(font);
 	name.setCharacterSize(buttonTextSize);
@@ -167,15 +179,18 @@ Menu::Menu(sf::RenderWindow* window, sf::View view)
 	cursor.setCharacterSize(buttonTextSize);
 	cursor.setString("  |");
 
-
-
+	//INFO
+	helpFrame.setSize({ 1152.f,720.f });
+	helpFrame.setTexture(&helpTexture);
+	helpFrame.setOrigin(helpFrame.getLocalBounds().width / 2,
+		helpFrame.getLocalBounds().height / 2);
 	this->window = window;
 	this->view = view;
 }
 
 void Menu::updateScore()
 {
-	score.writeFile(enteredName,playerScore);
+	score.writeFile(enteredName, playerScore);
 }
 
 void Menu::pauseCheck()
@@ -237,6 +252,22 @@ void Menu::mainMenuUpdate()
 		exitButton.setScale(1.f, 1.f);
 	}
 
+	if (helpButton.getGlobalBounds().contains(screenPos))
+	{
+		helpButtonText.setCharacterSize(36 * 1.5);
+		helpButton.setScale(1.2f, 1.2f);
+		if (sf::Mouse::isButtonPressed(sf::Mouse::Left) &&
+			transitionDebounce >= 0.3f)
+		{
+			states = HELP;
+			transitionDebounce = 0;
+		}
+	}
+	else
+	{
+		helpButtonText.setCharacterSize(36);
+		helpButton.setScale(1.f, 1.f);
+	}
 
 	playButtonText.setOrigin(playButtonText.getLocalBounds().width / 2,
 		playButtonText.getLocalBounds().height - 8);
@@ -244,6 +275,8 @@ void Menu::mainMenuUpdate()
 		leaderBoardButtonText.getLocalBounds().height - 8);
 	exitButtonText.setOrigin(exitButtonText.getLocalBounds().width / 2,
 		exitButtonText.getLocalBounds().height - 8);
+	helpButtonText.setOrigin(helpButtonText.getLocalBounds().width / 2,
+		helpButtonText.getLocalBounds().height - 8);
 
 	mainBackground.setPosition(view.getCenter());
 	title.setPosition(view.getCenter().x, view.getCenter().y - 50);
@@ -252,10 +285,12 @@ void Menu::mainMenuUpdate()
 	playButton.setPosition(view.getCenter().x, view.getCenter().y + 100);
 	leaderBoardButton.setPosition(view.getCenter().x, view.getCenter().y + 200);
 	exitButton.setPosition(view.getCenter().x, view.getCenter().y + 300);
+	helpButton.setPosition(view.getCenter().x - 670, view.getCenter().y + 400);
 
 	playButtonText.setPosition(playButton.getPosition());
 	leaderBoardButtonText.setPosition(leaderBoardButton.getPosition());
 	exitButtonText.setPosition(exitButton.getPosition());
+	helpButtonText.setPosition(helpButton.getPosition());
 
 
 }
@@ -268,14 +303,16 @@ void Menu::mainMenuRender()
 	window->draw(mainBackground);
 	window->draw(title);
 	window->draw(myName);
-	
+
 	window->draw(playButton);
 	window->draw(leaderBoardButton);
 	window->draw(exitButton);
+	window->draw(helpButton);
 
 	window->draw(playButtonText);
 	window->draw(leaderBoardButtonText);
 	window->draw(exitButtonText);
+	window->draw(helpButtonText);
 
 	window->display();
 }
@@ -420,7 +457,7 @@ void Menu::pauseMenuRender()
 	window->draw(mainMenuButton);
 	window->draw(mainMenuButtonText);
 	window->draw(resumeButtonText);
-	
+
 
 	window->display();
 }
@@ -494,7 +531,7 @@ void Menu::gameOverMenuRender()
 	window->draw(mainMenuButton);
 	window->draw(tryAgainButtonText);
 	window->draw(mainMenuButtonText);
-	
+
 
 	window->display();
 }
@@ -504,12 +541,13 @@ void Menu::nameUpdate(std::vector<sf::Event> events)
 	sf::Vector2i gamePos = sf::Mouse::getPosition(*window);
 	sf::Vector2f screenPos = window->mapPixelToCoords(gamePos);
 
-	if (confirmButton.getGlobalBounds().contains(screenPos) && 
+	if (confirmButton.getGlobalBounds().contains(screenPos) &&
 		enteredName != "")
 	{
 		confirmButtonText.setFillColor(sf::Color(140.f, 100.f, 54.f, 255.f));
 		confirmButtonText.setCharacterSize(buttonTextSize * 1.5);
 		confirmButton.setScale(1.2f, 1.2f);
+		confirmButton.setFillColor(sf::Color::White);
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left) &&
 			transitionDebounce >= 0.3f)
 		{
@@ -521,12 +559,18 @@ void Menu::nameUpdate(std::vector<sf::Event> events)
 	else
 	{
 		if (enteredName == "")
-			confirmButtonText.setFillColor(sf::Color( 128.f, 128.f, 128.f, 255.f ));
+		{
+			confirmButtonText.setFillColor(sf::Color(191.25f, 191.25f, 191.25f, 255.f));
+			confirmButton.setFillColor(sf::Color(128.f, 128.f, 128.f, 255.f));
+		}
 		else
+		{
 			confirmButtonText.setFillColor(sf::Color(140.f, 100.f, 54.f, 255.f));
+			confirmButton.setFillColor(sf::Color::White);
+		}
 
-			confirmButtonText.setCharacterSize(buttonTextSize);
-			confirmButton.setScale(1.f, 1.f);
+		confirmButtonText.setCharacterSize(buttonTextSize);
+		confirmButton.setScale(1.f, 1.f);
 	}
 
 	if (backButton_2.getGlobalBounds().contains(screenPos))
@@ -575,13 +619,13 @@ void Menu::nameUpdate(std::vector<sf::Event> events)
 		cursor.setFillColor(sf::Color::Transparent);
 		name.setString("ENTER  YOUR  NAME");
 	}
-	else if (cursorBlinking < 0.75f &&
+	if (cursorBlinking < 0.75f &&
 		enteredName.length() < 8)
 	{
 		name.setString(enteredName);
-		cursor.setFillColor(sf::Color(140.f, 100.f, 54.f, 255.f));
+		cursor.setFillColor(sf::Color::Transparent);
 	}
-	else if (cursorBlinking >= 0.75f &&
+	if (cursorBlinking >= 0.75f &&
 		enteredName.length() < 15)
 	{
 		name.setString(enteredName);
@@ -597,7 +641,7 @@ void Menu::nameUpdate(std::vector<sf::Event> events)
 
 	backButtonText_2.setOrigin(backButtonText_2.getLocalBounds().width / 2,
 		backButtonText_2.getLocalBounds().height - 8);
-	
+
 
 	confirmButton.setOrigin(confirmButton.getLocalBounds().width / 2,
 		confirmButton.getLocalBounds().height / 2);
@@ -607,7 +651,7 @@ void Menu::nameUpdate(std::vector<sf::Event> events)
 	name.setOrigin(name.getLocalBounds().width / 2,
 		0);
 	name.setPosition(view.getCenter().x, view.getCenter().y - 70);
-	cursor.setPosition(view.getCenter().x + name.getLocalBounds().width/2, view.getCenter().y - 70);
+	cursor.setPosition(view.getCenter().x + name.getLocalBounds().width / 2, view.getCenter().y - 70);
 
 	nameFrame.setPosition(view.getCenter());
 	confirmButton.setPosition(view.getCenter().x - 160, view.getCenter().y + 50);
@@ -630,6 +674,47 @@ void Menu::nameRender()
 
 	window->draw(name);
 	window->draw(cursor);
+
+	window->display();
+}
+
+void Menu::helpUpdate()
+{
+	sf::Vector2i gamePos = sf::Mouse::getPosition(*window);
+	sf::Vector2f screenPos = window->mapPixelToCoords(gamePos);
+
+	if (backButton.getGlobalBounds().contains(screenPos))
+	{
+		backButtonText.setCharacterSize(buttonTextSize * 1.5);
+		backButton.setScale(1.2f, 1.2f);
+		if (sf::Mouse::isButtonPressed(sf::Mouse::Left) &&
+			transitionDebounce >= 0.3)
+		{
+			states = MENU;
+			transitionDebounce = 0;
+		}
+	}
+	else
+	{
+		backButtonText.setCharacterSize(buttonTextSize);
+		backButton.setScale(1.f, 1.f);
+	}
+
+	backButtonText.setOrigin(backButtonText.getLocalBounds().width / 2,
+		backButtonText.getLocalBounds().height - 8);
+
+	backButton.setPosition(view.getCenter().x, view.getCenter().y + 350);
+	backButtonText.setPosition(backButton.getPosition());
+
+	helpFrame.setPosition(view.getCenter().x, view.getCenter().y - 80);
+}
+
+void Menu::helpRender()
+{
+	window->draw(greyScreen);
+	window->draw(helpFrame);
+	window->draw(backButton);
+	window->draw(backButtonText);
 
 	window->display();
 }
