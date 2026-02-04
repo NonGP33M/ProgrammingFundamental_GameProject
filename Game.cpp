@@ -1,3 +1,6 @@
+#include "Game.h"
+#include "mores"
+
 Game::Game(sf::RenderWindow *window, sf::View view)
 {
 	background.setSize({4608.f, 4608.f});
